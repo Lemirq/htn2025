@@ -1,0 +1,63 @@
+{
+  "query": "learn how to do an uppercut from boxing",
+  "title": "Learning Guide: Learn How To Do An Uppercut From Boxing",
+  "domain": "general",
+  "prerequisites": [
+    "Clear practice area",
+    "Proper stance",
+    "Basic warm-up"
+  ],
+  "safety": [
+    "Start slowly",
+    "Respect joint limits",
+    "Use protective gear",
+    "Practice with supervision"
+  ],
+  "equipment": [
+    "Training mat",
+    "Protective gear (optional)"
+  ],
+  "core_principles": [
+    "Whole-body coordination",
+    "Proper form over speed",
+    "Progressive training"
+  ],
+  "steps": [
+    {
+      "name": "Preparation",
+      "how": "Set up your practice area and equipment. Review safety guidelines.",
+      "why": "Proper preparation ensures safe and effective practice.",
+      "citations": [],
+      "difficulty_level": 1
+    },
+    {
+      "name": "Basic Technique",
+      "how": "Learn the fundamental movements slowly and with control.",
+      "why": "Building proper form is essential before adding speed or power.",
+      "citations": [],
+      "difficulty_level": 2
+    },
+    {
+      "name": "Practice",
+      "how": "Repeat the movements with focus on accuracy and consistency.",
+      "why": "Repetition builds muscle memory and confidence.",
+      "citations": [],
+      "difficulty_level": 3
+    },
+    {
+      "name": "Application",
+      "how": "Apply the skill in realistic scenarios or with variations.",
+      "why": "Real-world application tests understanding and adaptability.",
+      "citations": [],
+      "difficulty_level": 4
+    }
+  ],
+  "evaluation": [
+    "Maintain balance",
+    "Execute with control",
+    "Demonstrate understanding"
+  ],
+  "sources": [],
+  "estimated_learning_time": "2-4 weeks with regular practice",
+  "difficulty_rating": 3
+}
