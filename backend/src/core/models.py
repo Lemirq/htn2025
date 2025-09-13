@@ -197,14 +197,18 @@ class SkillBundle:
     sources: List[SourceDoc]
     guide: SkillGuide
     plan: ExecutionPlan
+    robot_instructions: Optional[Dict[str, Any]] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
-        return {
+        result = {
             "query": self.query,
             "sources": [source.to_dict() for source in self.sources],
             "guide": self.guide.to_dict(),
             "plan": self.plan.to_dict(),
             "metadata": self.metadata
         }
+        if self.robot_instructions:
+            result["robot_instructions"] = self.robot_instructions
+        return result
