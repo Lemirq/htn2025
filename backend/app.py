@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 import orjson
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room
 import threading
 import time
 
@@ -267,6 +267,12 @@ def handle_start_processing(data):
         if not query:
             emit('error', {'message': 'Query is required'})
             return
+        
+        # Ensure the requesting client joins the session room so it receives updates
+        try:
+            join_room(session_id)
+        except Exception as e:
+            logger.error(f"Failed to join room {session_id}: {e}")
         
         # Start processing in background thread
         def process_in_background():

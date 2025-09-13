@@ -180,6 +180,7 @@ class WebScraper:
             )
             
             urls = []
+            logger.info(f"Tavily response: {response}")
             if "results" in response:
                 for result in response["results"]:
                     if "url" in result:

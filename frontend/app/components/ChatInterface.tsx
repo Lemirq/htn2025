@@ -59,8 +59,7 @@ export const ChatInterface = () => {
     progress: 0,
     isActive: false,
   });
-  const [currentSkillBundle, setCurrentSkillBundle] =
-    useState<SkillBundle | null>(null);
+
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Connect to backend on component mount
@@ -89,7 +88,7 @@ export const ChatInterface = () => {
           {
             id: Date.now().toString(),
             content:
-              "❌ Failed to connect to backend. Please make sure the server is running on port 5000.",
+              "❌ Failed to connect to backend. Please make sure the server is running on port 5555.",
             sender: "bot",
             timestamp: new Date(),
             type: "error",
@@ -179,7 +178,6 @@ export const ChatInterface = () => {
         }
 
         if (update.progress === 100 && update.data?.bundle) {
-          setCurrentSkillBundle(update.data.bundle);
           setMessages((prev) => [
             ...prev,
             {
@@ -336,7 +334,7 @@ export const ChatInterface = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+      <ScrollArea className="flex-1 p-4 overflow-y-auto" ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages.map((message) => (
             <div
@@ -358,7 +356,7 @@ export const ChatInterface = () => {
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   message.sender === "user"
-                    ? "bg-gradient-primary text-primary-foreground ml-auto"
+                    ? "bg-primary text-primary-foreground ml-auto"
                     : message.type === "error"
                       ? "bg-destructive/20 border border-destructive/30"
                       : "bg-gradient-glass backdrop-blur-glass border border-glass-border"
@@ -367,9 +365,7 @@ export const ChatInterface = () => {
                 {renderMessage(message)}
                 <p
                   className={`text-xs mt-2 ${
-                    message.sender === "user"
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground"
+                    message.sender === "user" ? "" : ""
                   }`}
                 >
                   {message.timestamp.toLocaleTimeString()}
@@ -431,7 +427,7 @@ export const ChatInterface = () => {
             disabled={!inputValue.trim() || isLoading || !isConnected}
             variant="default"
             size="icon"
-            className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-glow transition-all duration-300"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />

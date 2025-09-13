@@ -104,33 +104,48 @@ class SkillLearningAPI {
 
     return new Promise((resolve, reject) => {
       const sessionId = `session_${Date.now()}`;
+      console.log("🚀 Starting skill processing:", {
+        query,
+        sessionId,
+        maxSources,
+      });
+
+      // Avoid duplicate listeners from previous runs
+      this.socket!.off("progress_update");
+      this.socket!.off("processing_started");
+      this.socket!.off("error");
 
       // Listen for progress updates
       this.socket!.on("progress_update", (update: SkillProcessingUpdate) => {
+        console.log("📈 Progress update received:", update);
         onProgress(update);
 
         // Resolve when complete
         if (update.progress === 100) {
+          console.log("✅ Processing completed successfully");
           resolve();
         }
 
         // Reject on error
         if (update.progress === -1) {
+          console.error("❌ Processing failed:", update.data?.error);
           reject(new Error(update.data?.error || "Processing failed"));
         }
       });
 
       // Listen for processing started confirmation
       this.socket!.on("processing_started", (data) => {
-        console.log("Processing started:", data);
+        console.log("🎬 Processing started confirmation:", data);
       });
 
       // Listen for errors
       this.socket!.on("error", (error) => {
+        console.error("🚨 Socket error:", error);
         reject(new Error(error.message || "Unknown error"));
       });
 
       // Start processing
+      console.log("📤 Emitting start_processing event");
       this.socket!.emit("start_processing", {
         query,
         max_sources: maxSources,

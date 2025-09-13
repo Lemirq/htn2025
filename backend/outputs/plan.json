@@ -1,0 +1,64 @@
+{
+  "skill": "Learning Guide: Perform The One Inch Punch",
+  "phases": [
+    {
+      "name": "preparation",
+      "duration_ms": 500,
+      "cue": "relax and position",
+      "pose_hints": "Set up your practice area and equipment. Review safety guidelines.",
+      "rationale": "Proper preparation ensures safe and effective practice.",
+      "citations": [],
+      "velocity_profile": "slow",
+      "force_profile": "minimal"
+    },
+    {
+      "name": "basic_technique",
+      "duration_ms": 600,
+      "cue": "smooth execution",
+      "pose_hints": "Learn the fundamental movements slowly and with control.",
+      "rationale": "Building proper form is essential before adding speed or power.",
+      "citations": [],
+      "velocity_profile": "medium",
+      "force_profile": "controlled"
+    },
+    {
+      "name": "practice",
+      "duration_ms": 700,
+      "cue": "smooth execution",
+      "pose_hints": "Repeat the movements with focus on accuracy and consistency.",
+      "rationale": "Repetition builds muscle memory and confidence.",
+      "citations": [],
+      "velocity_profile": "medium",
+      "force_profile": "controlled"
+    },
+    {
+      "name": "application",
+      "duration_ms": 800,
+      "cue": "smooth execution",
+      "pose_hints": "Apply the skill in realistic scenarios or with variations.",
+      "rationale": "Real-world application tests understanding and adaptability.",
+      "citations": [],
+      "velocity_profile": "medium",
+      "force_profile": "controlled"
+    }
+  ],
+  "constraints": {
+    "max_velocity_hint": 0.8190000000000001,
+    "keep_com_in_base": true,
+    "workspace_hint": "short to medium range combat movements",
+    "joint_limits": {
+      "shoulder_flexion": 180.0,
+      "elbow_extension": 170.0,
+      "hip_flexion": 120.0,
+      "knee_flexion": 135.0
+    },
+    "safety_margins": {
+      "impact_force": 0.755,
+      "joint_stress": 0.6549999999999999,
+      "balance_threshold": 0.855
+    }
+  },
+  "provenance": [],
+  "total_duration_ms": 2600,
+  "complexity_score": 1.06
+}
