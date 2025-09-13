@@ -1,0 +1,260 @@
+{
+  "skill_name": "How to Throw an Effective Uppercut in Boxing",
+  "robot_control_formats": {
+    "unlimited_dof": {
+      "description": "Full 6DOF control per arm with 3D positioning and orientation",
+      "coordinate_system": "right_handed_cartesian",
+      "units": {
+        "position": "meters",
+        "orientation": "radians",
+        "time": "milliseconds"
+      },
+      "instructions": [
+        {
+          "step_name": "basic_uppercut_technique",
+          "description": "Imagine your fist is whipping through the air, leaving a trail of fire behind it.\nKeep your eyes on your target and maintain a tight, compact guard throughout the motion. - This step teaches the fundamental movement pattern of the uppercut, emphasizing the importance of bo",
+          "left_arm_target": {
+            "x": 0.5,
+            "y": 0.2,
+            "z": 1.5,
+            "roll": 0.2,
+            "pitch": -0.3,
+            "yaw": 0.1
+          },
+          "right_arm_target": {
+            "x": 0.7,
+            "y": -0.2,
+            "z": 1.6,
+            "roll": -0.2,
+            "pitch": -0.4,
+            "yaw": -0.1
+          },
+          "duration_ms": 600,
+          "velocity_profile": "medium"
+        },
+        {
+          "step_name": "advanced_footwork_and_targeting",
+          "description": "Use your jab to create an opening and distract your opponent before throwing the uppercut.\nImagine your uppercut is slicing through your opponent's guard, finding a narrow gap to land cleanly. - This step teaches you how to set up an uppercut effectively and incorporate it into your combination",
+          "left_arm_target": {
+            "x": 0.19999999999999998,
+            "y": 0.30000000000000004,
+            "z": 1.3,
+            "roll": 0.1,
+            "pitch": 0.1,
+            "yaw": 0.2
+          },
+          "right_arm_target": {
+            "x": 0.3,
+            "y": -0.30000000000000004,
+            "z": 1.3,
+            "roll": -0.1,
+            "pitch": 0.1,
+            "yaw": -0.2
+          },
+          "duration_ms": 700,
+          "velocity_profile": "medium"
+        },
+        {
+          "step_name": "defensive_uppercut_variations",
+          "description": "Keep your eyes on your imaginary opponent at all times, tracking their punches and creating openings.\nVisualize your uppercut as a lightning-fast counter, catching your opponent off-guard. - This step teaches you how to use the uppercut as a defensive tool, countering your opponent's attack",
+          "left_arm_target": {
+            "x": 0.5,
+            "y": 0.2,
+            "z": 1.5,
+            "roll": 0.2,
+            "pitch": -0.3,
+            "yaw": 0.1
+          },
+          "right_arm_target": {
+            "x": 0.7,
+            "y": -0.2,
+            "z": 1.6,
+            "roll": -0.2,
+            "pitch": -0.4,
+            "yaw": -0.1
+          },
+          "duration_ms": 800,
+          "velocity_profile": "medium"
+        }
+      ]
+    },
+    "three_dof_per_arm": {
+      "description": "3DOF servo control per arm (shoulder 2-axis + elbow 1-axis)",
+      "servo_specifications": {
+        "range": "0-180 degrees",
+        "axes_per_arm": {
+          "shoulder": [
+            "vertical (up/down)",
+            "horizontal (left/right)"
+          ],
+          "elbow": [
+            "vertical (up/down)"
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "step_name": "basic_uppercut_technique",
+          "description": "Imagine your fist is whipping through the air, leaving a trail of fire behind it.\nKeep your eyes on your target and maintain a tight, compact guard throughout the motion. - Execute basic uppercut technique",
+          "servo_commands": [
+            {
+              "servo_id": "left_shoulder_vertical",
+              "axis": "shoulder_vertical",
+              "position_degrees": 75,
+              "duration_ms": 600,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "left_shoulder_horizontal",
+              "axis": "shoulder_horizontal",
+              "position_degrees": 60,
+              "duration_ms": 600,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "left_elbow_vertical",
+              "axis": "elbow_vertical",
+              "position_degrees": 45,
+              "duration_ms": 600,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_shoulder_vertical",
+              "axis": "shoulder_vertical",
+              "position_degrees": 60,
+              "duration_ms": 600,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_shoulder_horizontal",
+              "axis": "shoulder_horizontal",
+              "position_degrees": 120,
+              "duration_ms": 600,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_elbow_vertical",
+              "axis": "elbow_vertical",
+              "position_degrees": 30,
+              "duration_ms": 600,
+              "velocity_profile": "medium"
+            }
+          ],
+          "total_duration_ms": 600,
+          "synchronous": true
+        },
+        {
+          "step_name": "advanced_footwork_and_targeting",
+          "description": "Use your jab to create an opening and distract your opponent before throwing the uppercut.\nImagine your uppercut is slicing through your opponent's guard, finding a narrow gap to land cleanly. - Execute advanced footwork and targeting",
+          "servo_commands": [
+            {
+              "servo_id": "left_shoulder_vertical",
+              "axis": "shoulder_vertical",
+              "position_degrees": 75,
+              "duration_ms": 700,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "left_shoulder_horizontal",
+              "axis": "shoulder_horizontal",
+              "position_degrees": 60,
+              "duration_ms": 700,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "left_elbow_vertical",
+              "axis": "elbow_vertical",
+              "position_degrees": 45,
+              "duration_ms": 700,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_shoulder_vertical",
+              "axis": "shoulder_vertical",
+              "position_degrees": 60,
+              "duration_ms": 700,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_shoulder_horizontal",
+              "axis": "shoulder_horizontal",
+              "position_degrees": 120,
+              "duration_ms": 700,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_elbow_vertical",
+              "axis": "elbow_vertical",
+              "position_degrees": 30,
+              "duration_ms": 700,
+              "velocity_profile": "medium"
+            }
+          ],
+          "total_duration_ms": 700,
+          "synchronous": true
+        },
+        {
+          "step_name": "defensive_uppercut_variations",
+          "description": "Keep your eyes on your imaginary opponent at all times, tracking their punches and creating openings.\nVisualize your uppercut as a lightning-fast counter, catching your opponent off-guard. - Execute defensive uppercut variations",
+          "servo_commands": [
+            {
+              "servo_id": "left_shoulder_vertical",
+              "axis": "shoulder_vertical",
+              "position_degrees": 75,
+              "duration_ms": 800,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "left_shoulder_horizontal",
+              "axis": "shoulder_horizontal",
+              "position_degrees": 60,
+              "duration_ms": 800,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "left_elbow_vertical",
+              "axis": "elbow_vertical",
+              "position_degrees": 45,
+              "duration_ms": 800,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_shoulder_vertical",
+              "axis": "shoulder_vertical",
+              "position_degrees": 60,
+              "duration_ms": 800,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_shoulder_horizontal",
+              "axis": "shoulder_horizontal",
+              "position_degrees": 120,
+              "duration_ms": 800,
+              "velocity_profile": "medium"
+            },
+            {
+              "servo_id": "right_elbow_vertical",
+              "axis": "elbow_vertical",
+              "position_degrees": 30,
+              "duration_ms": 800,
+              "velocity_profile": "medium"
+            }
+          ],
+          "total_duration_ms": 800,
+          "synchronous": true
+        }
+      ]
+    }
+  },
+  "execution_metadata": {
+    "total_duration_ms": 2100,
+    "step_count": 3,
+    "safety_notes": [
+      "Ensure robot workspace is clear of obstacles and personnel",
+      "Verify servo position limits (0-180°) before execution",
+      "Monitor servo temperatures during extended operation",
+      "Emergency stop must be accessible at all times",
+      "Test movements at reduced speed before full execution"
+    ]
+  }
+}
