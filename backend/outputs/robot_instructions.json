@@ -1,80 +1,98 @@
 {
-  "skill_name": "How to Throw an Effective Uppercut in Boxing",
+  "skill_name": "Learning Guide: Learn How To Punch Properly",
+  "overall_strategy": "Executing Learning Guide: Learn How To Punch Properly through 4 coordinated phases. The robot will demonstrate proper form and technique by: 1. Preparation: Proper preparation ensures safe and effective practice. 2. Basic Technique: Building proper form is essential before adding speed or power. 3. Practice: Repetition builds muscle memory and confidence. 4. Application: Real-world application tests understanding and adaptability. Each movement is designed to build upon the previous phase, creating a fluid demonstration of the complete skill while maintaining safety and proper biomechanical principles.",
   "robot_control_formats": {
     "unlimited_dof": {
       "description": "Full 6DOF control per arm with 3D positioning and orientation",
       "coordinate_system": "right_handed_cartesian",
       "units": {
         "position": "meters",
-        "orientation": "radians",
-        "time": "milliseconds"
+        "orientation": "radians"
       },
       "instructions": [
         {
-          "step_name": "basic_uppercut_technique",
-          "description": "Imagine your fist is whipping through the air, leaving a trail of fire behind it.\nKeep your eyes on your target and maintain a tight, compact guard throughout the motion. - This step teaches the fundamental movement pattern of the uppercut, emphasizing the importance of bo",
+          "step_name": "preparation",
+          "description": "relax and position - Proper preparation ensures safe and effective practice.",
+          "spatial_reasoning": "Neutral positioning for preparation: Balanced arm placement maintains readiness for subsequent movements.",
           "left_arm_target": {
-            "x": 0.5,
+            "x": 0.3,
             "y": 0.2,
-            "z": 1.5,
-            "roll": 0.2,
-            "pitch": -0.3,
-            "yaw": 0.1
-          },
-          "right_arm_target": {
-            "x": 0.7,
-            "y": -0.2,
-            "z": 1.6,
-            "roll": -0.2,
-            "pitch": -0.4,
-            "yaw": -0.1
-          },
-          "duration_ms": 600,
-          "velocity_profile": "medium"
-        },
-        {
-          "step_name": "advanced_footwork_and_targeting",
-          "description": "Use your jab to create an opening and distract your opponent before throwing the uppercut.\nImagine your uppercut is slicing through your opponent's guard, finding a narrow gap to land cleanly. - This step teaches you how to set up an uppercut effectively and incorporate it into your combination",
-          "left_arm_target": {
-            "x": 0.19999999999999998,
-            "y": 0.30000000000000004,
-            "z": 1.3,
-            "roll": 0.1,
-            "pitch": 0.1,
-            "yaw": 0.2
+            "z": 1.2,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0
           },
           "right_arm_target": {
             "x": 0.3,
-            "y": -0.30000000000000004,
-            "z": 1.3,
-            "roll": -0.1,
-            "pitch": 0.1,
-            "yaw": -0.2
-          },
-          "duration_ms": 700,
-          "velocity_profile": "medium"
+            "y": -0.2,
+            "z": 1.2,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0
+          }
         },
         {
-          "step_name": "defensive_uppercut_variations",
-          "description": "Keep your eyes on your imaginary opponent at all times, tracking their punches and creating openings.\nVisualize your uppercut as a lightning-fast counter, catching your opponent off-guard. - This step teaches you how to use the uppercut as a defensive tool, countering your opponent's attack",
+          "step_name": "basic_technique",
+          "description": "smooth execution - Building proper form is essential before adding speed or power.",
+          "spatial_reasoning": "Neutral positioning for basic technique: Balanced arm placement maintains readiness for subsequent movements.",
           "left_arm_target": {
-            "x": 0.5,
+            "x": 0.3,
             "y": 0.2,
-            "z": 1.5,
-            "roll": 0.2,
-            "pitch": -0.3,
-            "yaw": 0.1
+            "z": 1.2,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0
           },
           "right_arm_target": {
-            "x": 0.7,
+            "x": 0.3,
             "y": -0.2,
-            "z": 1.6,
-            "roll": -0.2,
-            "pitch": -0.4,
-            "yaw": -0.1
+            "z": 1.2,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0
+          }
+        },
+        {
+          "step_name": "practice",
+          "description": "smooth execution - Repetition builds muscle memory and confidence.",
+          "spatial_reasoning": "Neutral positioning for practice: Balanced arm placement maintains readiness for subsequent movements.",
+          "left_arm_target": {
+            "x": 0.3,
+            "y": 0.2,
+            "z": 1.2,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0
           },
-          "duration_ms": 800,
-          "velocity_profile": "medium"
+          "right_arm_target": {
+            "x": 0.3,
+            "y": -0.2,
+            "z": 1.2,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0
+          }
+        },
+        {
+          "step_name": "application",
+          "description": "smooth execution - Real-world application tests understanding and adaptability.",
+          "spatial_reasoning": "Neutral positioning for application: Balanced arm placement maintains readiness for subsequent movements.",
+          "left_arm_target": {
+            "x": 0.3,
+            "y": 0.2,
+            "z": 1.2,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0
+          },
+          "right_arm_target": {
+            "x": 0.3,
+            "y": -0.2,
+            "z": 1.2,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0
+          }
         }
       ]
     },
@@ -94,167 +112,193 @@
       },
       "instructions": [
         {
-          "step_name": "basic_uppercut_technique",
-          "description": "Imagine your fist is whipping through the air, leaving a trail of fire behind it.\nKeep your eyes on your target and maintain a tight, compact guard throughout the motion. - Execute basic uppercut technique",
+          "step_name": "preparation",
+          "description": "relax and position - Execute preparation",
+          "movement_reasoning": "Mapped 3D targets to servo angles: z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow_vertical. Phase 'preparation' translated to balanced, safe positions.",
           "servo_commands": [
             {
               "servo_id": "left_shoulder_vertical",
               "axis": "shoulder_vertical",
-              "position_degrees": 75,
-              "duration_ms": 600,
-              "velocity_profile": "medium"
+              "position_degrees": 90.0,
+              "reasoning": "Higher z leads to raised left shoulder (90°)"
             },
             {
               "servo_id": "left_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 60,
-              "duration_ms": 600,
-              "velocity_profile": "medium"
+              "position_degrees": 30.0,
+              "reasoning": "Positive y pulls left shoulder inward (30°)"
             },
             {
               "servo_id": "left_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 45,
-              "duration_ms": 600,
-              "velocity_profile": "medium"
+              "position_degrees": 120.0,
+              "reasoning": "Forward x extends left elbow (120°)"
             },
             {
               "servo_id": "right_shoulder_vertical",
               "axis": "shoulder_vertical",
-              "position_degrees": 60,
-              "duration_ms": 600,
-              "velocity_profile": "medium"
+              "position_degrees": 90.0,
+              "reasoning": "Higher z leads to raised right shoulder (90°)"
             },
             {
               "servo_id": "right_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 120,
-              "duration_ms": 600,
-              "velocity_profile": "medium"
+              "position_degrees": 150.0,
+              "reasoning": "Negative y pulls right shoulder inward (150°)"
             },
             {
               "servo_id": "right_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 30,
-              "duration_ms": 600,
-              "velocity_profile": "medium"
+              "position_degrees": 120.0,
+              "reasoning": "Forward x extends right elbow (120°)"
             }
           ],
-          "total_duration_ms": 600,
           "synchronous": true
         },
         {
-          "step_name": "advanced_footwork_and_targeting",
-          "description": "Use your jab to create an opening and distract your opponent before throwing the uppercut.\nImagine your uppercut is slicing through your opponent's guard, finding a narrow gap to land cleanly. - Execute advanced footwork and targeting",
+          "step_name": "basic_technique",
+          "description": "smooth execution - Execute basic technique",
+          "movement_reasoning": "Mapped 3D targets to servo angles: z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow_vertical. Phase 'basic_technique' translated to balanced, safe positions.",
           "servo_commands": [
             {
               "servo_id": "left_shoulder_vertical",
               "axis": "shoulder_vertical",
-              "position_degrees": 75,
-              "duration_ms": 700,
-              "velocity_profile": "medium"
+              "position_degrees": 90.0,
+              "reasoning": "Higher z leads to raised left shoulder (90°)"
             },
             {
               "servo_id": "left_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 60,
-              "duration_ms": 700,
-              "velocity_profile": "medium"
+              "position_degrees": 30.0,
+              "reasoning": "Positive y pulls left shoulder inward (30°)"
             },
             {
               "servo_id": "left_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 45,
-              "duration_ms": 700,
-              "velocity_profile": "medium"
+              "position_degrees": 120.0,
+              "reasoning": "Forward x extends left elbow (120°)"
             },
             {
               "servo_id": "right_shoulder_vertical",
               "axis": "shoulder_vertical",
-              "position_degrees": 60,
-              "duration_ms": 700,
-              "velocity_profile": "medium"
+              "position_degrees": 90.0,
+              "reasoning": "Higher z leads to raised right shoulder (90°)"
             },
             {
               "servo_id": "right_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 120,
-              "duration_ms": 700,
-              "velocity_profile": "medium"
+              "position_degrees": 150.0,
+              "reasoning": "Negative y pulls right shoulder inward (150°)"
             },
             {
               "servo_id": "right_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 30,
-              "duration_ms": 700,
-              "velocity_profile": "medium"
+              "position_degrees": 120.0,
+              "reasoning": "Forward x extends right elbow (120°)"
             }
           ],
-          "total_duration_ms": 700,
           "synchronous": true
         },
         {
-          "step_name": "defensive_uppercut_variations",
-          "description": "Keep your eyes on your imaginary opponent at all times, tracking their punches and creating openings.\nVisualize your uppercut as a lightning-fast counter, catching your opponent off-guard. - Execute defensive uppercut variations",
+          "step_name": "practice",
+          "description": "smooth execution - Execute practice",
+          "movement_reasoning": "Mapped 3D targets to servo angles: z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow_vertical. Phase 'practice' translated to balanced, safe positions.",
           "servo_commands": [
             {
               "servo_id": "left_shoulder_vertical",
               "axis": "shoulder_vertical",
-              "position_degrees": 75,
-              "duration_ms": 800,
-              "velocity_profile": "medium"
+              "position_degrees": 90.0,
+              "reasoning": "Higher z leads to raised left shoulder (90°)"
             },
             {
               "servo_id": "left_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 60,
-              "duration_ms": 800,
-              "velocity_profile": "medium"
+              "position_degrees": 30.0,
+              "reasoning": "Positive y pulls left shoulder inward (30°)"
             },
             {
               "servo_id": "left_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 45,
-              "duration_ms": 800,
-              "velocity_profile": "medium"
+              "position_degrees": 120.0,
+              "reasoning": "Forward x extends left elbow (120°)"
             },
             {
               "servo_id": "right_shoulder_vertical",
               "axis": "shoulder_vertical",
-              "position_degrees": 60,
-              "duration_ms": 800,
-              "velocity_profile": "medium"
+              "position_degrees": 90.0,
+              "reasoning": "Higher z leads to raised right shoulder (90°)"
             },
             {
               "servo_id": "right_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 120,
-              "duration_ms": 800,
-              "velocity_profile": "medium"
+              "position_degrees": 150.0,
+              "reasoning": "Negative y pulls right shoulder inward (150°)"
             },
             {
               "servo_id": "right_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 30,
-              "duration_ms": 800,
-              "velocity_profile": "medium"
+              "position_degrees": 120.0,
+              "reasoning": "Forward x extends right elbow (120°)"
             }
           ],
-          "total_duration_ms": 800,
+          "synchronous": true
+        },
+        {
+          "step_name": "application",
+          "description": "smooth execution - Execute application",
+          "movement_reasoning": "Mapped 3D targets to servo angles: z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow_vertical. Phase 'application' translated to balanced, safe positions.",
+          "servo_commands": [
+            {
+              "servo_id": "left_shoulder_vertical",
+              "axis": "shoulder_vertical",
+              "position_degrees": 90.0,
+              "reasoning": "Higher z leads to raised left shoulder (90°)"
+            },
+            {
+              "servo_id": "left_shoulder_horizontal",
+              "axis": "shoulder_horizontal",
+              "position_degrees": 30.0,
+              "reasoning": "Positive y pulls left shoulder inward (30°)"
+            },
+            {
+              "servo_id": "left_elbow_vertical",
+              "axis": "elbow_vertical",
+              "position_degrees": 120.0,
+              "reasoning": "Forward x extends left elbow (120°)"
+            },
+            {
+              "servo_id": "right_shoulder_vertical",
+              "axis": "shoulder_vertical",
+              "position_degrees": 90.0,
+              "reasoning": "Higher z leads to raised right shoulder (90°)"
+            },
+            {
+              "servo_id": "right_shoulder_horizontal",
+              "axis": "shoulder_horizontal",
+              "position_degrees": 150.0,
+              "reasoning": "Negative y pulls right shoulder inward (150°)"
+            },
+            {
+              "servo_id": "right_elbow_vertical",
+              "axis": "elbow_vertical",
+              "position_degrees": 120.0,
+              "reasoning": "Forward x extends right elbow (120°)"
+            }
+          ],
           "synchronous": true
         }
       ]
     }
   },
   "execution_metadata": {
-    "total_duration_ms": 2100,
-    "step_count": 3,
+    "step_count": 4,
     "safety_notes": [
       "Ensure robot workspace is clear of obstacles and personnel",
       "Verify servo position limits (0-180°) before execution",
       "Monitor servo temperatures during extended operation",
       "Emergency stop must be accessible at all times",
-      "Test movements at reduced speed before full execution"
+      "Test movements at reduced speed before full execution",
+      "Complex multi-phase movement - verify each step individually"
     ]
   }
 }
