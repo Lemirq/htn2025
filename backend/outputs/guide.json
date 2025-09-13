@@ -2,21 +2,14 @@
   "query": "learn one inch punch",
   "title": "Learning Guide: Learn One Inch Punch",
   "domain": "general",
-  "prerequisites": [
-    "Clear practice area",
-    "Proper stance",
-    "Basic warm-up"
-  ],
+  "prerequisites": ["Clear practice area", "Proper stance", "Basic warm-up"],
   "safety": [
     "Start slowly",
     "Respect joint limits",
     "Use protective gear",
     "Practice with supervision"
   ],
-  "equipment": [
-    "Training mat",
-    "Protective gear (optional)"
-  ],
+  "equipment": ["Training mat", "Protective gear (optional)"],
   "core_principles": [
     "Whole-body coordination",
     "Proper form over speed",

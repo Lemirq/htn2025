@@ -12,6 +12,7 @@ from ..core.exceptions import SkillLearningError
 from ..services.scraper import WebScraper
 from ..services.llm_agent import CohereAgent
 from ..services.compiler import SkillCompiler
+from ..services.robot_controller import RobotControlGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class SkillLearningPipeline:
         self.scraper = WebScraper(self.config.scraping)
         self.llm_agent = CohereAgent(self.config.llm)
         self.compiler = SkillCompiler(self.config.compiler)
+        self.robot_controller = RobotControlGenerator()
         
         # Setup logging
         logging.basicConfig(
@@ -63,12 +65,18 @@ class SkillLearningPipeline:
             logger.info(f"Compiled plan with {len(plan.phases)} phases, "
                        f"total duration: {plan.total_duration_ms}ms")
             
+            # Step 4: Generate robot control instructions
+            logger.info("Step 4: Generating robot control instructions...")
+            robot_instructions = self.robot_controller.generate_robot_instructions(plan)
+            logger.info("Generated robot control instructions for unlimited DOF and 3 DOF models")
+            
             # Create bundle
             bundle = SkillBundle(
                 query=query,
                 sources=sources,
                 guide=guide,
                 plan=plan,
+                robot_instructions=robot_instructions.to_dict(),
                 metadata={
                     "pipeline_version": "2.0",
                     "processing_warnings": warnings,
@@ -95,6 +103,7 @@ class SkillLearningPipeline:
             "sources": output_dir / "sources.json",
             "guide": output_dir / "guide.json", 
             "plan": output_dir / "plan.json",
+            "robot_instructions": output_dir / "robot_instructions.json",
             "bundle": output_dir / "complete_bundle.json"
         }
         
@@ -103,6 +112,8 @@ class SkillLearningPipeline:
             self._save_json(files["sources"], {"sources": [s.to_dict() for s in bundle.sources]})
             self._save_json(files["guide"], bundle.guide.to_dict())
             self._save_json(files["plan"], bundle.plan.to_dict())
+            if bundle.robot_instructions:
+                self._save_json(files["robot_instructions"], bundle.robot_instructions)
             self._save_json(files["bundle"], bundle.to_dict())
             
             logger.info(f"Saved bundle to {output_dir}")
