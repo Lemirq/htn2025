@@ -10,4 +10,4 @@ wheels/
 .venv
 
 # Environment variables and api keys
-.env
+/backend/.env
