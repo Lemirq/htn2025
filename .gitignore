@@ -13,3 +13,5 @@ wheels/
 /backend/.env
 /backend/outputs
 .DS_Store
+backend/src/services/.DS_Store
+backend/src/.DS_Store

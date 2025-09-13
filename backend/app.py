@@ -123,6 +123,20 @@ async def process_skill_with_streaming(query: str, session_id: str, max_sources:
         
         # Save results
         saved_files = pipeline.save_bundle(bundle)
+
+        # Emit final movements if available
+        try:
+            output_dir = Path(pipeline.config.output_dir)
+            servo_file = output_dir / "servo_sequence.json"
+            if servo_file.exists():
+                with open(servo_file, 'rb') as f:
+                    servo_payload = orjson.loads(f.read())
+                socketio.emit('final_movements', servo_payload, room=session_id)
+                logger.info(f"Session {session_id}: Emitted final_movements event")
+            else:
+                logger.warning(f"Session {session_id}: servo_sequence.json not found at {servo_file}")
+        except Exception as e:
+            logger.error(f"Session {session_id}: Failed to emit final_movements: {e}")
         
         processor.emit_progress("Complete", 100, {
             'bundle': bundle.to_dict(),

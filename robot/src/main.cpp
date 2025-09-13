@@ -3,10 +3,20 @@
 #include <WebServer.h>
 #include <ESP32Servo.h>
 #include <ArduinoJson.h>
+// WebSocket client (Engine.IO/Socket.IO transport)
+#include <ArduinoWebsockets.h>
 
 // WiFi credentials (provided)
 const char* WIFI_SSID = "HackTheNorth";
 const char* WIFI_PASS = "HTN2025!";
+
+// Backend Socket.IO server (adjust HOST to your laptop's LAN IP)
+// Example from logs: "Running on http://10.37.115.59:5555"
+static const char* BACKEND_HOST = "10.37.115.59";
+static const uint16_t BACKEND_PORT = 5555;
+// Socket.IO v4 Engine.IO WebSocket endpoint
+// ws://<host>:<port>/socket.io/?EIO=4&transport=websocket
+String backendWsUrl = String("ws://") + BACKEND_HOST + ":" + BACKEND_PORT + "/socket.io/?EIO=4&transport=websocket";
 
 // Heartbeat LED (on many ESP32 boards GPIO2 has onboard LED; adjust if needed)
 const int LED_PIN = 2;
@@ -26,6 +36,13 @@ WebServer server(80);
 
 unsigned long lastBlink = 0;
 bool ledState = false;
+
+using namespace websockets;
+WebsocketsClient wsClient;
+bool wsConnected = false;
+unsigned long lastWsAttemptMs = 0;
+unsigned long lastPingMs = 0;
+unsigned long wsReconnectBackoffMs = 2000; // exponential backoff base
 
 void sendJson(const JsonDocument &doc, int status = 200) {
   String out;
@@ -301,6 +318,158 @@ void setupServer() {
   Serial.println("=== HTTP Server Setup Complete ===");
 }
 
+// Map logical servo IDs from backend payload to local indices
+int mapServoIdToIndex(const String &id) {
+  if (id == "left_shoulder_vertical") return 0;
+  if (id == "left_shoulder_horizontal") return 1;
+  if (id == "left_elbow_vertical") return 2;
+  if (id == "right_shoulder_vertical") return 3;
+  if (id == "right_shoulder_horizontal") return 4;
+  if (id == "right_elbow_vertical") return 5;
+  return -1;
+}
+
+// Apply a final_movements payload (subset of servo_sequence.json)
+void applyFinalMovements(const JsonVariantConst &payload) {
+  if (!payload.is<JsonObject>()) return;
+  JsonObjectConst obj = payload.as<JsonObjectConst>();
+  if (!obj.containsKey("sequence")) return;
+  JsonArrayConst seq = obj["sequence"].as<JsonArrayConst>();
+
+  Serial.println("🤖 Applying final_movements sequence from backend...");
+  for (JsonObjectConst step : seq) {
+    if (!step.containsKey("commands")) continue;
+    JsonArrayConst cmds = step["commands"].as<JsonArrayConst>();
+    for (JsonObjectConst cmd : cmds) {
+      String id = cmd["id"].as<const char*>();
+      int deg = cmd["deg"].as<int>();
+      int idx = mapServoIdToIndex(id);
+      if (idx >= 0 && idx < SERVO_COUNT) {
+        deg = constrain(deg, 0, 180);
+        servos[idx].write(deg);
+        currentAngles[idx] = deg;
+        Serial.print("  • ");
+        Serial.print(id);
+        Serial.print(" (servo ");
+        Serial.print(idx);
+        Serial.print(") -> ");
+        Serial.print(deg);
+        Serial.println("°");
+      } else {
+        Serial.print("  ⚠️ Unknown servo id: ");
+        Serial.println(id);
+      }
+    }
+    // Small pacing delay between steps
+    delay(200);
+  }
+  Serial.println("✅ final_movements sequence applied");
+}
+
+// Very small Socket.IO v4 frame parser for default namespace
+// Handles: open (0{"sid":...}), ping (2) -> pong (3), connect (40), event (42["evt", {..}])
+void handleSocketIoFrame(const String &data) {
+  if (data.length() == 0) return;
+  char type = data.charAt(0);
+  switch (type) {
+    case '0': {
+      // Open packet. Respond with connect to default namespace
+      Serial.println("🔗 Engine.IO open received; sending Socket.IO connect (40)");
+      wsClient.send("40");
+      break;
+    }
+    case '2': {
+      // Ping -> Pong
+      // Keep connection alive; server pings at interval
+      wsClient.send("3");
+      lastPingMs = millis();
+      // Serial.println("↔️  Ping received -> Pong sent");
+      break;
+    }
+    case '3': {
+      // Pong from server (rare for client-initiated pings)
+      break;
+    }
+    case '4': {
+      if (data.length() >= 2) {
+        char subtype = data.charAt(1);
+        if (subtype == '0') {
+          // Connected to namespace
+          wsConnected = true;
+          Serial.println("✅ Socket.IO namespace connected (40)");
+        } else if (subtype == '2') {
+          // Event: 42["event",payload]
+          int jsonStart = data.indexOf('[');
+          if (jsonStart > 0) {
+            String arrStr = data.substring(jsonStart);
+            StaticJsonDocument<2048> doc;
+            DeserializationError err = deserializeJson(doc, arrStr);
+            if (err) {
+              Serial.print("❌ Failed to parse Socket.IO event JSON: ");
+              Serial.println(err.c_str());
+              return;
+            }
+            if (!doc.is<JsonArray>()) return;
+            JsonArray arr = doc.as<JsonArray>();
+            String evt = arr[0].as<const char*>();
+            JsonVariant payload = arr[1];
+            Serial.print("📥 Event: ");
+            Serial.println(evt);
+            if (evt == "final_movements") {
+              applyFinalMovements(payload);
+            }
+          }
+        }
+      }
+      break;
+    }
+    default:
+      // Other frame types ignored
+      break;
+  }
+}
+
+void setupWebsocketClient() {
+  wsClient.onMessage([&](WebsocketsMessage msg){
+    if (msg.isText()) {
+      String data = msg.data();
+      // Socket.IO may concatenate multiple packets; split by '\n' safeguard
+      int start = 0;
+      while (start < data.length()) {
+        int nl = data.indexOf('\n', start);
+        String frame = (nl == -1) ? data.substring(start) : data.substring(start, nl);
+        if (frame.length() > 0) handleSocketIoFrame(frame);
+        if (nl == -1) break;
+        start = nl + 1;
+      }
+    }
+  });
+
+  wsClient.onEvent([&](WebsocketsEvent evt, String data){
+    if (evt == WebsocketsEvent::ConnectionOpened) {
+      Serial.println("🌐 WebSocket connection opened to backend");
+      wsConnected = false; // will be true after receiving 40
+    } else if (evt == WebsocketsEvent::ConnectionClosed) {
+      Serial.println("⚠️ WebSocket connection closed, will retry...");
+      wsConnected = false;
+    } else if (evt == WebsocketsEvent::GotPing) {
+      // Library-level ping handling; we still handle Engine.IO pings separately
+    } else if (evt == WebsocketsEvent::GotPong) {
+    }
+  });
+}
+
+bool attemptWsConnect() {
+  Serial.print("🔌 Connecting to backend WS: ");
+  Serial.println(backendWsUrl);
+  bool ok = wsClient.connect(backendWsUrl.c_str());
+  if (!ok) {
+    Serial.println("❌ WS connect failed");
+    return false;
+  }
+  return true;
+}
+
 void setup() {
   Serial.begin(115200);
   delay(2000); // Give serial time to initialize
@@ -326,6 +495,11 @@ void setup() {
   setupServos();
   setupServer();
 
+  // Setup Socket.IO-compatible WebSocket client
+  setupWebsocketClient();
+  // Initial connection attempt (non-blocking retry handled in loop)
+  attemptWsConnect();
+
   Serial.println("\n╔══════════════════════════════════════════════════╗");
   Serial.println("║              SYSTEM READY!                      ║");
   Serial.println("╚══════════════════════════════════════════════════╝");
@@ -345,5 +519,22 @@ void loop() {
     ledState = !ledState;
     digitalWrite(LED_PIN, ledState ? HIGH : LOW);
     lastBlink = now;
+  }
+
+  // WebSocket client polling
+  wsClient.poll();
+
+  // Reconnect strategy: attempt periodically if disconnected
+  if (!wsConnected) {
+    if (now - lastWsAttemptMs >= wsReconnectBackoffMs) {
+      lastWsAttemptMs = now;
+      if (attemptWsConnect()) {
+        // Reset backoff on success
+        wsReconnectBackoffMs = 2000;
+      } else {
+        // Exponential backoff up to 60s
+        wsReconnectBackoffMs = min<unsigned long>(wsReconnectBackoffMs * 2, 60000);
+      }
+    }
   }
 }
