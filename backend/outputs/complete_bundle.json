@@ -1,9 +1,9 @@
 {
-  "query": "learn how to do an uppercut from boxing",
+  "query": "Learn one inch puch",
   "sources": [],
   "guide": {
-    "query": "learn how to do an uppercut from boxing",
-    "title": "Learning Guide: Learn How To Do An Uppercut From Boxing",
+    "query": "Learn one inch puch",
+    "title": "Learning Guide: Learn One Inch Puch",
     "domain": "general",
     "prerequisites": [
       "Clear practice area",
@@ -65,7 +65,7 @@
     "difficulty_rating": 3
   },
   "plan": {
-    "skill": "Learning Guide: Learn How To Do An Uppercut From Boxing",
+    "skill": "Learning Guide: Learn One Inch Puch",
     "phases": [
       {
         "name": "preparation",

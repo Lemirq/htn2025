@@ -1,60 +1,227 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Send,
+  Bot,
+  User,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { skillAPI, SkillProcessingUpdate, SkillBundle } from "@/lib/api";
+
+// Define specific types for message data
+interface ProgressData {
+  source_count?: number;
+  title?: string;
+  step_count?: number;
+  difficulty?: number;
+  bundle?: SkillBundle;
+  error?: string;
+}
 
 interface Message {
   id: string;
-  text: string;
-  sender: "user" | "ai";
+  content: string;
+  sender: "user" | "bot";
   timestamp: Date;
+  type?: "text" | "progress" | "result" | "error";
+  data?: SkillBundle | ProgressData;
 }
 
-export default function ChatInterface() {
+interface ProgressState {
+  step: string;
+  progress: number;
+  isActive: boolean;
+  data?: ProgressData;
+}
+
+export const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hello! I can help you control the robot. Describe the movement you want the robot to perform, and I'll analyze how to execute it.",
-      sender: "ai",
+      content:
+        "Hello! I'm your robot control assistant. Describe the movements you want the robot to perform, and I'll help translate them into actions.",
+      sender: "bot",
       timestamp: new Date(),
+      type: "text",
     },
   ]);
-  const [inputText, setInputText] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [progressState, setProgressState] = useState<ProgressState>({
+    step: "",
+    progress: 0,
+    isActive: false,
+  });
+  const [currentSkillBundle, setCurrentSkillBundle] =
+    useState<SkillBundle | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // Connect to backend on component mount
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const connectToBackend = async () => {
+      try {
+        await skillAPI.connect();
+        setIsConnected(true);
+
+        // Add connection success message
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            content:
+              "🔗 Connected to skill learning backend! Ready to process movement commands.",
+            sender: "bot",
+            timestamp: new Date(),
+            type: "text",
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to connect to backend:", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            content:
+              "❌ Failed to connect to backend. Please make sure the server is running on port 5000.",
+            sender: "bot",
+            timestamp: new Date(),
+            type: "error",
+          },
+        ]);
+      }
+    };
+
+    connectToBackend();
+
+    // Cleanup on unmount
+    return () => {
+      skillAPI.disconnect();
+    };
+  }, []);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  }, [messages, progressState]);
 
   const handleSendMessage = async () => {
-    if (!inputText.trim() || isLoading) return;
+    if (!inputValue.trim() || !isConnected) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputText,
+      content: inputValue,
       sender: "user",
       timestamp: new Date(),
+      type: "text",
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInputText("");
+    const query = inputValue;
+    setInputValue("");
     setIsLoading(true);
+    setProgressState({ step: "", progress: 0, isActive: true });
 
-    // Simulate AI processing
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: `I understand you want the robot to "${inputText}". I'm analyzing the movement pattern and will break it down into executable commands for the robot's torso and arms. This would typically involve web scraping for movement data and then translating it to robot controls.`,
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
+    try {
+      // Add processing start message
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          content: `🚀 Processing "${query}"... I'll analyze this movement and create a learning guide for the robot.`,
+          sender: "bot",
+          timestamp: new Date(),
+          type: "text",
+        },
+      ]);
+
+      await skillAPI.processSkill(query, (update: SkillProcessingUpdate) => {
+        setProgressState({
+          step: update.step,
+          progress: update.progress,
+          isActive: update.progress < 100 && update.progress >= 0,
+          data: update.data,
+        });
+
+        // Add intermediate progress messages for key milestones
+        if (update.data && update.progress === 30) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `progress_${Date.now()}`,
+              content: `📚 Found ${update.data?.source_count} sources for learning this movement.`,
+              sender: "bot",
+              timestamp: new Date(),
+              type: "text",
+            },
+          ]);
+        }
+
+        if (update.data && update.progress === 70) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `progress_${Date.now()}`,
+              content: `📋 Generated "${update.data?.title}" with ${update.data?.step_count} learning steps (Difficulty: ${update.data?.difficulty}/5).`,
+              sender: "bot",
+              timestamp: new Date(),
+              type: "text",
+            },
+          ]);
+        }
+
+        if (update.progress === 100 && update.data?.bundle) {
+          setCurrentSkillBundle(update.data.bundle);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `result_${Date.now()}`,
+              content: "Processing complete! Here's your skill learning guide:",
+              sender: "bot",
+              timestamp: new Date(),
+              type: "result",
+              data: update.data?.bundle,
+            },
+          ]);
+        }
+
+        if (update.progress === -1) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `error_${Date.now()}`,
+              content: `❌ Error: ${update.data?.error || "Processing failed"}`,
+              sender: "bot",
+              timestamp: new Date(),
+              type: "error",
+            },
+          ]);
+        }
+      });
+    } catch (error) {
+      console.error("Error processing skill:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `error_${Date.now()}`,
+          content: `❌ Error processing request: ${error instanceof Error ? error.message : "Unknown error"}`,
+          sender: "bot",
+          timestamp: new Date(),
+          type: "error",
+        },
+      ]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+      setProgressState({ step: "", progress: 0, isActive: false });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -64,103 +231,216 @@ export default function ChatInterface() {
     }
   };
 
-  return (
-    <div className="h-full flex flex-col bg-gray-900">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-700 bg-gray-800">
-        <h2 className="text-white text-xl font-semibold">
-          AI Movement Assistant
-        </h2>
-        <p className="text-gray-300 text-sm">
-          Describe movements in natural language
-        </p>
-      </div>
+  const renderMessage = (message: Message) => {
+    if (message.type === "result" && message.data) {
+      const bundle = message.data as SkillBundle;
+      return (
+        <div className="space-y-4">
+          <p className="text-sm">{message.content}</p>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] p-3 rounded-lg ${
-                message.sender === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-700 text-gray-100"
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-              <p className="text-xs opacity-70 mt-1">
-                {message.timestamp.toLocaleTimeString()}
-              </p>
-            </div>
-          </div>
-        ))}
-
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-700 text-gray-100 p-3 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
-                </div>
-                <span className="text-sm">Analyzing movement...</span>
+          {/* Skill Overview */}
+          <div className="bg-gradient-glass backdrop-blur-glass border border-glass-border rounded-lg p-4">
+            <h3 className="text-lg font-semibold text-neon mb-2">
+              {bundle.guide.title}
+            </h3>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="text-muted-foreground">Domain:</span>
+                <span className="ml-2 text-foreground">
+                  {bundle.guide.domain}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Difficulty:</span>
+                <span className="ml-2 text-foreground">
+                  {bundle.guide.difficulty_rating}/5
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Duration:</span>
+                <span className="ml-2 text-foreground">
+                  {bundle.plan.total_duration_ms}ms
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Steps:</span>
+                <span className="ml-2 text-foreground">
+                  {bundle.guide.steps.length}
+                </span>
               </div>
             </div>
           </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
 
-      {/* Input Area */}
-      <div className="p-4 border-t border-gray-700 bg-gray-800">
-        <div className="flex space-x-2">
-          <textarea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Describe a movement (e.g., 'wave hello', 'reach up', 'clap hands')..."
-            className="flex-1 p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
-            rows={2}
-            disabled={isLoading}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputText.trim() || isLoading}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-          >
-            Send
-          </button>
-        </div>
-
-        {/* Example prompts */}
-        <div className="mt-3">
-          <p className="text-gray-400 text-xs mb-2">Try these examples:</p>
-          <div className="flex flex-wrap gap-2">
-            {["Wave hello", "Reach up high", "Cross arms", "Point forward"].map(
-              (example) => (
-                <button
-                  key={example}
-                  onClick={() => setInputText(example)}
-                  className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
-                  disabled={isLoading}
-                >
-                  {example}
-                </button>
-              )
+          {/* Learning Steps */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-neon">Learning Steps:</h4>
+            {bundle.guide.steps.slice(0, 3).map((step, index) => (
+              <div key={index} className="bg-muted/20 rounded-lg p-3">
+                <div className="text-xs font-medium text-foreground">
+                  {index + 1}. {step.name}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {step.how}
+                </div>
+              </div>
+            ))}
+            {bundle.guide.steps.length > 3 && (
+              <div className="text-xs text-muted-foreground">
+                +{bundle.guide.steps.length - 3} more steps...
+              </div>
             )}
           </div>
+
+          {/* Safety Guidelines */}
+          {bundle.guide.safety.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-neon-secondary">
+                ⚠️ Safety:
+              </h4>
+              <div className="text-xs text-muted-foreground space-y-1">
+                {bundle.guide.safety.slice(0, 2).map((safety, index) => (
+                  <div key={index}>• {safety}</div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return <p className="text-sm">{message.content}</p>;
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="bg-gradient-glass backdrop-blur-glass border-b border-glass-border p-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/20 rounded-lg">
+            <Bot className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Robot Control AI
+            </h2>
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-2 h-2 rounded-full ${isConnected ? "bg-neon animate-pulse" : "bg-destructive"}`}
+              />
+              <p className="text-sm text-muted-foreground">
+                {isConnected ? "Connected to backend" : "Disconnected"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+            >
+              {message.sender === "bot" && (
+                <div className="p-2 bg-primary/20 rounded-lg h-fit">
+                  {message.type === "error" ? (
+                    <AlertCircle className="w-4 h-4 text-destructive" />
+                  ) : message.type === "result" ? (
+                    <CheckCircle className="w-4 h-4 text-neon" />
+                  ) : (
+                    <Bot className="w-4 h-4 text-primary" />
+                  )}
+                </div>
+              )}
+
+              <div
+                className={`max-w-[80%] rounded-lg p-3 ${
+                  message.sender === "user"
+                    ? "bg-gradient-primary text-primary-foreground ml-auto"
+                    : message.type === "error"
+                      ? "bg-destructive/20 border border-destructive/30"
+                      : "bg-gradient-glass backdrop-blur-glass border border-glass-border"
+                }`}
+              >
+                {renderMessage(message)}
+                <p
+                  className={`text-xs mt-2 ${
+                    message.sender === "user"
+                      ? "text-primary-foreground/70"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {message.timestamp.toLocaleTimeString()}
+                </p>
+              </div>
+
+              {message.sender === "user" && (
+                <div className="p-2 bg-secondary/20 rounded-lg h-fit">
+                  <User className="w-4 h-4 text-secondary" />
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Progress Indicator */}
+          {progressState.isActive && (
+            <div className="flex gap-3">
+              <div className="p-2 bg-primary/20 rounded-lg h-fit">
+                <Loader2 className="w-4 h-4 text-primary animate-spin" />
+              </div>
+              <div className="bg-gradient-glass backdrop-blur-glass border border-glass-border rounded-lg p-3 flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">
+                    {progressState.step}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {progressState.progress}%
+                  </span>
+                </div>
+                <div className="w-full bg-muted/30 rounded-full h-2">
+                  <div
+                    className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progressState.progress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      {/* Input */}
+      <div className="bg-gradient-glass backdrop-blur-glass border-t border-glass-border p-4">
+        <div className="flex gap-2">
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder={
+              isConnected
+                ? "Describe a movement for the robot..."
+                : "Connecting to backend..."
+            }
+            className="flex-1 bg-muted/50 border-glass-border"
+            disabled={!isConnected || isLoading}
+          />
+          <Button
+            onClick={handleSendMessage}
+            disabled={!inputValue.trim() || isLoading || !isConnected}
+            variant="default"
+            size="icon"
+            className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </Button>
         </div>
       </div>
     </div>
   );
-}
+};
