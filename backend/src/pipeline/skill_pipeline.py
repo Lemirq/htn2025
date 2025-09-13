@@ -28,7 +28,8 @@ class SkillLearningPipeline:
         self.scraper = WebScraper(self.config.scraping)
         self.llm_agent = CohereAgent(self.config.llm)
         self.compiler = SkillCompiler(self.config.compiler)
-        self.robot_controller = RobotControlGenerator()
+        # Pass LLM config so servo planning can call Cohere
+        self.robot_controller = RobotControlGenerator(self.config.llm)
         
         # Setup logging
         logging.basicConfig(
@@ -104,6 +105,7 @@ class SkillLearningPipeline:
             "guide": output_dir / "guide.json", 
             "plan": output_dir / "plan.json",
             "robot_instructions": output_dir / "robot_instructions.json",
+            "servo_sequence": output_dir / "servo_sequence.json",
             "bundle": output_dir / "complete_bundle.json"
         }
         
@@ -114,6 +116,9 @@ class SkillLearningPipeline:
             self._save_json(files["plan"], bundle.plan.to_dict())
             if bundle.robot_instructions:
                 self._save_json(files["robot_instructions"], bundle.robot_instructions)
+            # Save minimal servo sequence (no textual descriptions)
+            minimal_seq = self.robot_controller.generate_minimal_servo_sequence(bundle.plan)
+            self._save_json(files["servo_sequence"], minimal_seq)
             self._save_json(files["bundle"], bundle.to_dict())
             
             logger.info(f"Saved bundle to {output_dir}")
