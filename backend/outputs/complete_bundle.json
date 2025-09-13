@@ -1,9 +1,9 @@
 {
-  "query": "Learn one inch puch",
+  "query": "learn one inch punch",
   "sources": [],
   "guide": {
-    "query": "Learn one inch puch",
-    "title": "Learning Guide: Learn One Inch Puch",
+    "query": "learn one inch punch",
+    "title": "Learning Guide: Learn One Inch Punch",
     "domain": "general",
     "prerequisites": [
       "Clear practice area",
@@ -65,7 +65,7 @@
     "difficulty_rating": 3
   },
   "plan": {
-    "skill": "Learning Guide: Learn One Inch Puch",
+    "skill": "Learning Guide: Learn One Inch Punch",
     "phases": [
       {
         "name": "preparation",

@@ -3,11 +3,13 @@ from __future__ import annotations
 import re
 import asyncio
 import logging
+import os
 from typing import List, Optional, Dict, Any
 from urllib.parse import urljoin, urlparse
 import httpx
 from bs4 import BeautifulSoup
 import trafilatura
+from tavily import TavilyClient
 
 from ..core.models import SourceDoc, SourceType, SkillDomain
 from ..core.config import ScrapingConfig
@@ -154,70 +156,45 @@ class WebScraper:
         self.domain_classifier = DomainClassifier()
         self.source_weighter = SourceWeighter(config)
         self.content_extractor = ContentExtractor(config)
+        
+        # Initialize Tavily client
+        tavily_api_key = os.getenv("TAVILY_API_KEY")
+        if not tavily_api_key:
+            raise ScrapingError("TAVILY_API_KEY not found in environment variables. Please set this required environment variable.")
+        
+        self.tavily_client = TavilyClient(api_key=tavily_api_key)
     
-    async def search_duckduckgo(self, query: str, max_results: int = 10) -> List[str]:
-        """Search DuckDuckGo and return URLs."""
+    async def search(self, query: str, max_results: int = 10) -> List[str]:
+        """Search using Tavily API and return URLs."""
         try:
-            async with httpx.AsyncClient(
-                timeout=self.config.timeout_seconds,
-                follow_redirects=True,
-                headers={"User-Agent": self.config.user_agent}
-            ) as client:
-                response = await client.get(
-                    "https://duckduckgo.com/html/",
-                    params={"q": query}
-                )
-                response.raise_for_status()
-                
-                soup = BeautifulSoup(response.text, "lxml")
-                urls = []
-                
-                # Try multiple selectors for DuckDuckGo results
-                selectors = [
-                    "a[href*='uddg=']",  # DuckDuckGo redirect links
-                    "a.result__a",
-                    "a.result__url", 
-                    "h2.result__title a",
-                    "a[data-testid='result-title-a']"
-                ]
-                
-                for selector in selectors:
-                    for link in soup.select(selector):
-                        href = link.get("href", "")
-                        
-                        # Handle DuckDuckGo redirect URLs
-                        if "uddg=" in href:
-                            try:
-                                from urllib.parse import unquote
-                                # Extract the actual URL from DuckDuckGo's redirect
-                                actual_url = unquote(href.split("uddg=")[1])
-                                if actual_url.startswith("http"):
-                                    urls.append(actual_url)
-                            except:
-                                continue
-                        elif (href.startswith("http") and 
-                              "duckduckgo.com" not in href and 
-                              "javascript:" not in href):
-                            urls.append(href)
-                
-                # Deduplicate while preserving order
-                seen = set()
-                unique_urls = []
-                for url in urls:
-                    if url not in seen:
-                        seen.add(url)
-                        unique_urls.append(url)
-                
-                # Prioritize trusted domains
-                trusted_urls = [u for u in unique_urls if any(
-                    pattern.search(u) for pattern, _ in self.source_weighter.trust_patterns
-                )]
-                other_urls = [u for u in unique_urls if u not in trusted_urls]
-                
-                return (trusted_urls + other_urls)[:max_results]
-                
+            # Use Tavily's search API
+            response = self.tavily_client.search(
+                query=query,
+                search_depth="basic",  # Can be "basic" or "advanced"
+                max_results=max_results,
+                include_domains=None,  # Can specify trusted domains if needed
+                exclude_domains=None,
+                include_answer=False,  # We don't need the AI-generated answer
+                include_raw_content=False,  # We'll fetch content ourselves
+                include_images=False
+            )
+            
+            urls = []
+            if "results" in response:
+                for result in response["results"]:
+                    if "url" in result:
+                        urls.append(result["url"])
+            
+            # Prioritize trusted domains
+            trusted_urls = [u for u in urls if any(
+                pattern.search(u) for pattern, _ in self.source_weighter.trust_patterns
+            )]
+            other_urls = [u for u in urls if u not in trusted_urls]
+            
+            return (trusted_urls + other_urls)[:max_results]
+            
         except Exception as e:
-            logger.error(f"DuckDuckGo search failed: {e}")
+            logger.error(f"Tavily search failed: {e}")
             raise ScrapingError(f"Search failed: {e}")
     
     async def fetch_document(self, client: httpx.AsyncClient, url: str, query: str) -> Optional[SourceDoc]:
@@ -278,7 +255,7 @@ class WebScraper:
         
         try:
             # Search for URLs
-            urls = await self.search_duckduckgo(query, max_sources * 2)
+            urls = await self.search(query, max_sources * 2)
             if not urls:
                 logger.warning(f"No URLs found for query: {query}")
                 return []

@@ -12,5 +12,6 @@ dependencies = [
     "flask-socketio>=5.5.1",
     "httpx>=0.28.1",
     "orjson>=3.11.3",
+    "tavily-python>=0.7.12",
     "trafilatura>=2.0.0",
 ]
