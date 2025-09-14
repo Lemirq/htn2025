@@ -10,6 +10,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room
 import threading
 import time
+import httpx
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -133,6 +134,53 @@ async def process_skill_with_streaming(query: str, session_id: str, max_sources:
                     servo_payload = orjson.loads(f.read())
                 socketio.emit('final_movements', servo_payload, room=session_id)
                 logger.info(f"Session {session_id}: Emitted final_movements event")
+
+                # Optionally send sequence to robot over HTTP if configured
+                robot_base_url = getattr(pipeline.config, 'robot_base_url', None)
+                if robot_base_url:
+                    def post_sequence_to_robot(payload: Dict[str, Any]):
+                        try:
+                            # Maintain last-known angles; start neutral 90 deg for all 6
+                            angles = [90, 90, 90, 90, 90, 90]
+
+                            # Mapping from servo id to index expected by robot firmware
+                            id_to_index = {
+                                "left_shoulder_vertical": 0,
+                                "left_shoulder_horizontal": 1,
+                                "left_elbow_vertical": 2,
+                                "right_shoulder_vertical": 3,
+                                "right_shoulder_horizontal": 4,
+                                "right_elbow_vertical": 5,
+                            }
+
+                            sequence = payload.get('sequence', []) or []
+                            with httpx.Client(timeout=5.0) as client:
+                                for step in sequence:
+                                    try:
+                                        cmds = step.get('commands', []) or []
+                                        for cmd in cmds:
+                                            sid = cmd.get('id')
+                                            deg = int(cmd.get('deg', 90))
+                                            idx = id_to_index.get(sid, None)
+                                            if idx is not None and 0 <= idx < 6:
+                                                angles[idx] = max(0, min(180, deg))
+                                        # POST batch angles to robot at /servos
+                                        base = robot_base_url.rstrip('/')
+                                        if not (base.startswith('http://') or base.startswith('https://')):
+                                            base = f"http://{base}"
+                                        url = f"{base}/servos"
+                                        resp = client.post(url, json={"angles": angles})
+                                        if resp.status_code >= 400:
+                                            logger.warning(f"Robot responded {resp.status_code}: {resp.text}")
+                                        time.sleep(0.2)  # pacing between steps
+                                    except Exception as step_err:
+                                        logger.warning(f"Robot step post failed: {step_err}")
+                        except Exception as e:
+                            logger.error(f"Failed to send servo sequence to robot: {e}")
+
+                    threading.Thread(target=post_sequence_to_robot, args=(servo_payload,), daemon=True).start()
+                else:
+                    logger.info("ROBOT_BASE_URL not set; skipping robot POST")
             else:
                 logger.warning(f"Session {session_id}: servo_sequence.json not found at {servo_file}")
         except Exception as e:

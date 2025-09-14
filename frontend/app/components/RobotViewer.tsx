@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { Mesh, Group } from "three";
+import { skillAPI } from "@/lib/api";
 
 // Robot component with torso and two arms
 function Robot() {
@@ -13,20 +14,91 @@ function Robot() {
   const rightShoulderRef = useRef<Group>(null);
   const rightElbowRef = useRef<Group>(null);
 
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    // Animate shoulder and elbow with slight phase offset
+  // Track current and target angles per servo id
+  const currentAnglesRef = useRef<Record<string, number>>({
+    left_shoulder_vertical: 90,
+    left_shoulder_horizontal: 90,
+    left_elbow_vertical: 90,
+    right_shoulder_vertical: 90,
+    right_shoulder_horizontal: 90,
+    right_elbow_vertical: 90,
+  });
+  const targetAnglesRef = useRef<Record<string, number>>({
+    left_shoulder_vertical: 90,
+    left_shoulder_horizontal: 90,
+    left_elbow_vertical: 90,
+    right_shoulder_vertical: 90,
+    right_shoulder_horizontal: 90,
+    right_elbow_vertical: 90,
+  });
+
+  // Subscribe to final_movements and step through the sequence
+  useEffect(() => {
+    const unsubscribe = skillAPI.onFinalMovements((payload) => {
+      try {
+        const sequence: Array<any> = Array.isArray(payload?.sequence)
+          ? payload.sequence
+          : [];
+        let stepIndex = 0;
+        const stepDelayMs = 200;
+
+        const applyNext = () => {
+          if (stepIndex >= sequence.length) return;
+          const step = sequence[stepIndex];
+          const cmds: Array<any> = Array.isArray(step?.commands)
+            ? step.commands
+            : [];
+          cmds.forEach((cmd) => {
+            const id = String(cmd?.id || "");
+            const deg = Math.max(0, Math.min(180, Number(cmd?.deg ?? 90)));
+            if (id in targetAnglesRef.current) {
+              targetAnglesRef.current[id] = deg;
+            }
+          });
+          stepIndex += 1;
+          setTimeout(applyNext, stepDelayMs);
+        };
+
+        applyNext();
+      } catch (e) {
+        console.error("Failed to apply final_movements to viewer", e);
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Lerp current angles toward targets and apply to joint rotations
+  useFrame((state, delta) => {
+    const lerpFactor = 1 - Math.pow(0.001, delta); // smooth approach
+    const ids = Object.keys(currentAnglesRef.current);
+    ids.forEach((id) => {
+      const cur = currentAnglesRef.current[id];
+      const tgt = targetAnglesRef.current[id];
+      currentAnglesRef.current[id] = cur + (tgt - cur) * lerpFactor;
+    });
+
+    // Helper: degrees -> centered radians (-90..+90 => -PI/2..+PI/2)
+    const toRad = (deg: number) => ((deg - 90) * Math.PI) / 180;
+
+    // Apply mapped rotations
+    const a = currentAnglesRef.current;
     if (leftShoulderRef.current) {
-      leftShoulderRef.current.rotation.z = Math.sin(t) * 0.2;
+      // vertical around Z, horizontal around Y
+      leftShoulderRef.current.rotation.z = toRad(a.left_shoulder_vertical);
+      leftShoulderRef.current.rotation.y = toRad(a.left_shoulder_horizontal);
     }
     if (leftElbowRef.current) {
-      leftElbowRef.current.rotation.z = Math.sin(t + Math.PI / 4) * 0.3;
+      leftElbowRef.current.rotation.z = toRad(a.left_elbow_vertical);
     }
     if (rightShoulderRef.current) {
-      rightShoulderRef.current.rotation.z = -Math.sin(t) * 0.2;
+      // mirror horizontal axis for right arm for a natural look
+      rightShoulderRef.current.rotation.z = toRad(a.right_shoulder_vertical);
+      rightShoulderRef.current.rotation.y = -toRad(a.right_shoulder_horizontal);
     }
     if (rightElbowRef.current) {
-      rightElbowRef.current.rotation.z = -Math.sin(t + Math.PI / 4) * 0.3;
+      rightElbowRef.current.rotation.z = toRad(a.right_elbow_vertical);
     }
   });
 

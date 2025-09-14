@@ -62,6 +62,48 @@ export const ChatInterface = () => {
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  // Timer state
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const timerStartRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<number | null>(null);
+
+  const startTimer = () => {
+    // Stop any existing timer first
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    timerStartRef.current = Date.now();
+    setElapsedMs(0);
+    timerIntervalRef.current = window.setInterval(() => {
+      if (timerStartRef.current !== null) {
+        setElapsedMs(Date.now() - timerStartRef.current);
+      }
+    }, 100);
+  };
+
+  const stopTimer = (): number => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    const total = timerStartRef.current
+      ? Date.now() - timerStartRef.current
+      : elapsedMs;
+    timerStartRef.current = null;
+    return total;
+  };
+
+  const formatDuration = (ms: number): string => {
+    if (ms < 1000) return `${ms}ms`;
+    const seconds = ms / 1000;
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    const tenths = Math.floor((seconds - Math.floor(seconds)) * 10);
+    return `${m}:${s.toString().padStart(2, "0")}${tenths ? "." + tenths : ""}`;
+  };
+
   // Connect to backend on component mount
   useEffect(() => {
     const connectToBackend = async () => {
@@ -75,7 +117,7 @@ export const ChatInterface = () => {
           {
             id: Date.now().toString(),
             content:
-              "🔗 Connected to skill learning backend! Ready to process movement commands.",
+              "🔗 Connected to skill learning backend. Ready to process movement commands.",
             sender: "bot",
             timestamp: new Date(),
             type: "text",
@@ -102,6 +144,11 @@ export const ChatInterface = () => {
     // Cleanup on unmount
     return () => {
       skillAPI.disconnect();
+      // Ensure any running timer is cleared on unmount
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
     };
   }, []);
 
@@ -128,6 +175,7 @@ export const ChatInterface = () => {
     setInputValue("");
     setIsLoading(true);
     setProgressState({ step: "", progress: 0, isActive: true });
+    startTimer();
 
     try {
       // Add processing start message
@@ -178,6 +226,7 @@ export const ChatInterface = () => {
         }
 
         if (update.progress === 100 && update.data?.bundle) {
+          const totalMs = stopTimer();
           setMessages((prev) => [
             ...prev,
             {
@@ -188,10 +237,18 @@ export const ChatInterface = () => {
               type: "result",
               data: update.data?.bundle,
             },
+            {
+              id: `timer_${Date.now()}`,
+              content: `⏱ Completed in ${formatDuration(totalMs)}`,
+              sender: "bot",
+              timestamp: new Date(),
+              type: "text",
+            },
           ]);
         }
 
         if (update.progress === -1) {
+          const totalMs = stopTimer();
           setMessages((prev) => [
             ...prev,
             {
@@ -201,11 +258,19 @@ export const ChatInterface = () => {
               timestamp: new Date(),
               type: "error",
             },
+            {
+              id: `timer_${Date.now()}`,
+              content: `⏱ Ended after ${formatDuration(totalMs)}`,
+              sender: "bot",
+              timestamp: new Date(),
+              type: "text",
+            },
           ]);
         }
       });
     } catch (error) {
       console.error("Error processing skill:", error);
+      const totalMs = stopTimer();
       setMessages((prev) => [
         ...prev,
         {
@@ -215,10 +280,19 @@ export const ChatInterface = () => {
           timestamp: new Date(),
           type: "error",
         },
+        {
+          id: `timer_${Date.now()}`,
+          content: `⏱ Ended after ${formatDuration(totalMs)}`,
+          sender: "bot",
+          timestamp: new Date(),
+          type: "text",
+        },
       ]);
     } finally {
       setIsLoading(false);
       setProgressState({ step: "", progress: 0, isActive: false });
+      // Safety: ensure timer is stopped
+      stopTimer();
     }
   };
 
