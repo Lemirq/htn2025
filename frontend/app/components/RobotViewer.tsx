@@ -34,28 +34,54 @@ function Robot() {
 
   // Subscribe to final_movements and step through the sequence
   useEffect(() => {
+    console.log("[RobotViewer] Registering final_movements listener");
     const unsubscribe = skillAPI.onFinalMovements((payload) => {
       try {
+        console.log("[RobotViewer] Received final_movements payload:", payload);
         const sequence: FinalMovementsStep[] = Array.isArray(payload?.sequence)
           ? payload.sequence
           : [];
+        console.log("[RobotViewer] Parsed sequence length:", sequence.length);
         let stepIndex = 0;
         const stepDelayMs = 200;
+        console.log("[RobotViewer] Using stepDelayMs:", stepDelayMs);
 
         const applyNext = () => {
-          if (stepIndex >= sequence.length) return;
+          console.log("[RobotViewer] applyNext called. stepIndex:", stepIndex);
+          if (stepIndex >= sequence.length) {
+            console.log(
+              "[RobotViewer] Sequence complete. Total steps:",
+              sequence.length
+            );
+            return;
+          }
           const step = sequence[stepIndex];
           const cmds: FinalMovementsCommand[] = Array.isArray(step?.commands)
             ? step.commands
             : [];
+          console.log(
+            `[RobotViewer] Applying step ${stepIndex + 1}/${sequence.length} with commands:`,
+            cmds
+          );
           cmds.forEach((cmd) => {
             const id = String(cmd?.id || "");
             const deg = Math.max(0, Math.min(180, Number(cmd?.deg ?? 90)));
             if (id in targetAnglesRef.current) {
+              console.log(
+                `[RobotViewer] Setting target angle for ${id} -> ${deg}°`
+              );
               targetAnglesRef.current[id] = deg;
+            } else {
+              console.warn(
+                `[RobotViewer] Unknown servo id '${id}'. Command ignored.`,
+                cmd
+              );
             }
           });
           stepIndex += 1;
+          console.log(
+            `[RobotViewer] Scheduling next step (index ${stepIndex}) in ${stepDelayMs}ms`
+          );
           setTimeout(applyNext, stepDelayMs);
         };
 
@@ -65,6 +91,7 @@ function Robot() {
       }
     });
     return () => {
+      console.log("[RobotViewer] Unsubscribing final_movements listener");
       unsubscribe();
     };
   }, []);

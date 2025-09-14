@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { skillAPI, SkillProcessingUpdate, SkillBundle } from "@/lib/api";
+import Image from "next/image";
 
 // Define specific types for message data
 interface ProgressData {
@@ -389,7 +390,8 @@ export const ChatInterface = () => {
       <div className="bg-gradient-glass backdrop-blur-glass border-b border-glass-border p-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/20 rounded-lg">
-            <Bot className="w-6 h-6 text-primary" />
+            {/* <Bot className="w-6 h-6 text-primary" /> */}
+            <Image src="/monkey.png" alt="Monkey" width={40} height={40} />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-foreground">
@@ -416,7 +418,7 @@ export const ChatInterface = () => {
               className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               {message.sender === "bot" && (
-                <div className="p-2 bg-primary/20 rounded-lg h-fit">
+                <div className="p-2 bg-primary/0 rounded-lg h-fit">
                   {message.type === "error" ? (
                     <AlertCircle className="w-4 h-4 text-destructive" />
                   ) : message.type === "result" ? (
