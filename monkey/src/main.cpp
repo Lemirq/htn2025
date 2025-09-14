@@ -14,8 +14,9 @@ int16_t TFT_WIDTH, TFT_HEIGHT;
 
 uint16_t monkeyBrown, monkeyTan, black, white, darkBrown;
 
-enum FaceMode { HAPPY, ANGRY };
-FaceMode currentMode = HAPPY;
+// Animation variables
+unsigned long lastBlink = 0;
+bool eyesOpen = true;
 
 // ----------------- FACE DRAWING -----------------
 
@@ -33,6 +34,30 @@ void drawMonkeyBase(int cx, int cy) {
     tft.fillCircle(cx, cy + 20, 70, monkeyTan);
 }
 
+void drawEyes(bool open) {
+    int cx = TFT_WIDTH / 2;
+    int cy = TFT_HEIGHT / 2;
+
+    if (open) {
+        // Open eyes - draw over the eye area only
+        tft.fillCircle(cx - 35, cy - 20, 22, white);
+        tft.fillCircle(cx + 35, cy - 20, 22, white);
+        tft.fillCircle(cx - 35, cy - 20, 12, black);
+        tft.fillCircle(cx + 35, cy - 20, 12, black);
+        // highlights
+        tft.fillCircle(cx - 31, cy - 24, 4, white);
+        tft.fillCircle(cx + 39, cy - 24, 4, white);
+    } else {
+        // Closed eyes - just cover the eye area with closed eyes
+        // First cover the old eyes with face color
+        tft.fillCircle(cx - 35, cy - 20, 25, monkeyTan);
+        tft.fillCircle(cx + 35, cy - 20, 25, monkeyTan);
+        // Then draw closed eye lines
+        tft.fillRect(cx - 45, cy - 22, 20, 4, darkBrown);
+        tft.fillRect(cx + 25, cy - 22, 20, 4, darkBrown);
+    }
+}
+
 void drawHappyFace() {
     int cx = TFT_WIDTH / 2;
     int cy = TFT_HEIGHT / 2;
@@ -40,58 +65,17 @@ void drawHappyFace() {
     tft.fillScreen(white);
     drawMonkeyBase(cx, cy);
 
-    // Eyes - big and wide-set, perfectly circular
-    tft.fillCircle(cx - 35, cy - 20, 22, white);
-    tft.fillCircle(cx + 35, cy - 20, 22, white);
-    tft.fillCircle(cx - 35, cy - 20, 12, black);
-    tft.fillCircle(cx + 35, cy - 20, 12, black);
-    // highlights - positioned better for circular eyes
-    tft.fillCircle(cx - 31, cy - 24, 4, white);
-    tft.fillCircle(cx + 39, cy - 24, 4, white);
+    // Draw initial open eyes
+    drawEyes(true);
 
     // Nose (small oval in muzzle)
     tft.fillCircle(cx - 6, cy + 10, 4, black);
     tft.fillCircle(cx + 6, cy + 10, 4, black);
 
-    // Smile inside muzzle - UPWARD curve for happiness
+    // Static smile for now
     for (int i = 0; i < 180; i++) {
         int x = cx + cos(radians(i)) * 35;
         int y = cy + sin(radians(i)) * 20 + 35;
-        tft.fillCircle(x, y, 2, darkBrown);
-    }
-}
-
-void drawAngryFace() {
-    int cx = TFT_WIDTH / 2;
-    int cy = TFT_HEIGHT / 2;
-
-    tft.fillScreen(white);
-    drawMonkeyBase(cx, cy);
-
-    // Angled eyebrows - slanted downward toward the nose for angry look
-    // Left eyebrow - slopes down from left to center
-    for (int i = 0; i < 5; i++) {
-        tft.drawLine(cx - 50, cy - 40, cx - 25, cy - 25 - i, darkBrown);
-    }
-    // Right eyebrow - slopes down from right to center  
-    for (int i = 0; i < 5; i++) {
-        tft.drawLine(cx + 50, cy - 40, cx + 25, cy - 25 - i, darkBrown);
-    }
-
-    // Eyes - circular but narrowed for anger
-    tft.fillCircle(cx - 35, cy - 20, 18, white);
-    tft.fillCircle(cx + 35, cy - 20, 18, white);
-    tft.fillCircle(cx - 35, cy - 20, 10, black);
-    tft.fillCircle(cx + 35, cy - 20, 10, black);
-
-    // Nose
-    tft.fillCircle(cx - 6, cy + 10, 4, black);
-    tft.fillCircle(cx + 6, cy + 10, 4, black);
-
-    // Frown - DOWNWARD curve for anger
-    for (int i = 180; i < 360; i++) {
-        int x = cx + cos(radians(i)) * 35;
-        int y = cy + sin(radians(i)) * 20 + 40;
         tft.fillCircle(x, y, 2, darkBrown);
     }
 }
@@ -112,28 +96,28 @@ void setup() {
     white       = tft.color565(255, 255, 255);
     darkBrown   = tft.color565(60, 40, 10);
 
-    drawHappyFace();  // start happy
-    currentMode = HAPPY;
+    // Initialize animation timers
+    lastBlink = millis();
+    
+    drawHappyFace();  // show happy monkey
 }
 
 void loop() {
-    static unsigned long lastSwitch = 0;
     unsigned long now = millis();
 
-    // TODO: Future ESP32 communication feature
-    // When ESP32 detects action -> switch to ANGRY mode immediately
-    // When idle for 10 seconds -> switch to HAPPY mode
-    // For now: Switch every 10s for testing
-    
-    // Switch every 10s for now
-    if (now - lastSwitch > 10000) {
-        if (currentMode == HAPPY) {
-            drawAngryFace();
-            currentMode = ANGRY;
-        } else {
-            drawHappyFace();
-            currentMode = HAPPY;
+    // Simple blinking animation - blink every 2 seconds
+    if (now - lastBlink > 2000) {
+        if (eyesOpen) {
+            eyesOpen = false;
+            lastBlink = now;
+            drawEyes(false); // Just update eyes, not whole face
+        } else if (now - lastBlink > 200) { // Eyes closed for 200ms
+            eyesOpen = true;
+            lastBlink = now;
+            drawEyes(true); // Just update eyes, not whole face
         }
-        lastSwitch = now;
     }
+
+    // Small delay
+    delay(50);
 }
