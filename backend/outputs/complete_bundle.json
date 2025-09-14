@@ -1,9 +1,9 @@
 {
-  "query": "Learn how to wave",
+  "query": "Learn how to punch properly",
   "sources": [],
   "guide": {
-    "query": "Learn how to wave",
-    "title": "Learning Guide: Learn How To Wave",
+    "query": "Learn how to punch properly",
+    "title": "Learning Guide: Learn How To Punch Properly",
     "domain": "general",
     "prerequisites": [
       "Clear practice area",
@@ -65,7 +65,7 @@
     "difficulty_rating": 3
   },
   "plan": {
-    "skill": "Learning Guide: Learn How To Wave",
+    "skill": "Learning Guide: Learn How To Punch Properly",
     "phases": [
       {
         "name": "preparation",
@@ -136,8 +136,8 @@
     "phase_count": 4
   },
   "robot_instructions": {
-    "skill_name": "Learning Guide: Learn How To Wave",
-    "overall_strategy": "Executing Learning Guide: Learn How To Wave through 4 coordinated phases. The robot will demonstrate proper form and technique by: 1. Preparation: Proper preparation ensures safe and effective practice. 2. Basic Technique: Building proper form is essential before adding speed or power. 3. Practice: Repetition builds muscle memory and confidence. 4. Application: Real-world application tests understanding and adaptability. Each movement is designed to build upon the previous phase, creating a fluid demonstration of the complete skill while maintaining safety and proper biomechanical principles.",
+    "skill_name": "Learning Guide: Learn How To Punch Properly",
+    "overall_strategy": "Executing Learning Guide: Learn How To Punch Properly through 4 coordinated phases. The robot will demonstrate proper form and technique by: 1. Preparation: Proper preparation ensures safe and effective practice. 2. Basic Technique: Building proper form is essential before adding speed or power. 3. Practice: Repetition builds muscle memory and confidence. 4. Application: Real-world application tests understanding and adaptability. Each movement is designed to build upon the previous phase, creating a fluid demonstration of the complete skill while maintaining safety and proper biomechanical principles.",
     "robot_control_formats": {
       "unlimited_dof": {
         "description": "Full 6DOF control per arm with 3D positioning and orientation",

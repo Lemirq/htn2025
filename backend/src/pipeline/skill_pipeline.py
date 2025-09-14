@@ -122,7 +122,8 @@ class SkillLearningPipeline:
             self._save_json(files["servo_sequence"], minimal_seq)
             # Save a compact legend mapping numeric IDs to servo names (no change to servo_sequence structure)
             if hasattr(self.robot_controller, "SERVO_ID_MAP"):
-                id_map = {v: k for k, v in self.robot_controller.SERVO_ID_MAP.items()}
+                # Ensure keys are strings for JSON serialization
+                id_map = {str(v): k for k, v in self.robot_controller.SERVO_ID_MAP.items()}
                 self._save_json(files["servo_id_map"], {"id_map": id_map})
             self._save_json(files["bundle"], bundle.to_dict())
             
