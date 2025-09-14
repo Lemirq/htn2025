@@ -1,0 +1,10 @@
+{
+  "id_map": {
+    "1": "left_shoulder_vertical",
+    "2": "left_shoulder_horizontal",
+    "3": "left_elbow_vertical",
+    "4": "right_shoulder_vertical",
+    "5": "right_shoulder_horizontal",
+    "6": "right_elbow_vertical"
+  }
+}

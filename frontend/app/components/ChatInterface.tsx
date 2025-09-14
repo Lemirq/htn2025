@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { skillAPI, SkillProcessingUpdate, SkillBundle } from "@/lib/api";
+import Image from "next/image";
 
 // Define specific types for message data
 interface ProgressData {
@@ -62,6 +63,48 @@ export const ChatInterface = () => {
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  // Timer state
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const timerStartRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<number | null>(null);
+
+  const startTimer = () => {
+    // Stop any existing timer first
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    timerStartRef.current = Date.now();
+    setElapsedMs(0);
+    timerIntervalRef.current = window.setInterval(() => {
+      if (timerStartRef.current !== null) {
+        setElapsedMs(Date.now() - timerStartRef.current);
+      }
+    }, 100);
+  };
+
+  const stopTimer = (): number => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    const total = timerStartRef.current
+      ? Date.now() - timerStartRef.current
+      : elapsedMs;
+    timerStartRef.current = null;
+    return total;
+  };
+
+  const formatDuration = (ms: number): string => {
+    if (ms < 1000) return `${ms}ms`;
+    const seconds = ms / 1000;
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    const tenths = Math.floor((seconds - Math.floor(seconds)) * 10);
+    return `${m}:${s.toString().padStart(2, "0")}${tenths ? "." + tenths : ""}`;
+  };
+
   // Connect to backend on component mount
   useEffect(() => {
     const connectToBackend = async () => {
@@ -75,7 +118,7 @@ export const ChatInterface = () => {
           {
             id: Date.now().toString(),
             content:
-              "🔗 Connected to skill learning backend! Ready to process movement commands.",
+              "🔗 Connected to skill learning backend. Ready to process movement commands.",
             sender: "bot",
             timestamp: new Date(),
             type: "text",
@@ -102,6 +145,11 @@ export const ChatInterface = () => {
     // Cleanup on unmount
     return () => {
       skillAPI.disconnect();
+      // Ensure any running timer is cleared on unmount
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
     };
   }, []);
 
@@ -128,6 +176,7 @@ export const ChatInterface = () => {
     setInputValue("");
     setIsLoading(true);
     setProgressState({ step: "", progress: 0, isActive: true });
+    startTimer();
 
     try {
       // Add processing start message
@@ -143,6 +192,7 @@ export const ChatInterface = () => {
       ]);
 
       await skillAPI.processSkill(query, (update: SkillProcessingUpdate) => {
+        console.log("📈 Progress update received:", update);
         setProgressState({
           step: update.step,
           progress: update.progress,
@@ -178,6 +228,7 @@ export const ChatInterface = () => {
         }
 
         if (update.progress === 100 && update.data?.bundle) {
+          const totalMs = stopTimer();
           setMessages((prev) => [
             ...prev,
             {
@@ -188,10 +239,18 @@ export const ChatInterface = () => {
               type: "result",
               data: update.data?.bundle,
             },
+            {
+              id: `timer_${Date.now()}`,
+              content: `⏱ Completed in ${formatDuration(totalMs)}`,
+              sender: "bot",
+              timestamp: new Date(),
+              type: "text",
+            },
           ]);
         }
 
         if (update.progress === -1) {
+          const totalMs = stopTimer();
           setMessages((prev) => [
             ...prev,
             {
@@ -201,11 +260,19 @@ export const ChatInterface = () => {
               timestamp: new Date(),
               type: "error",
             },
+            {
+              id: `timer_${Date.now()}`,
+              content: `⏱ Ended after ${formatDuration(totalMs)}`,
+              sender: "bot",
+              timestamp: new Date(),
+              type: "text",
+            },
           ]);
         }
       });
     } catch (error) {
       console.error("Error processing skill:", error);
+      const totalMs = stopTimer();
       setMessages((prev) => [
         ...prev,
         {
@@ -215,10 +282,19 @@ export const ChatInterface = () => {
           timestamp: new Date(),
           type: "error",
         },
+        {
+          id: `timer_${Date.now()}`,
+          content: `⏱ Ended after ${formatDuration(totalMs)}`,
+          sender: "bot",
+          timestamp: new Date(),
+          type: "text",
+        },
       ]);
     } finally {
       setIsLoading(false);
       setProgressState({ step: "", progress: 0, isActive: false });
+      // Safety: ensure timer is stopped
+      stopTimer();
     }
   };
 
@@ -315,15 +391,16 @@ export const ChatInterface = () => {
       <div className="bg-gradient-glass backdrop-blur-glass border-b border-glass-border p-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/20 rounded-lg">
-            <Bot className="w-6 h-6 text-primary" />
+            {/* <Bot className="w-6 h-6 text-primary" /> */}
+            <Image src="/monkey.png" alt="Monkey" width={40} height={40} />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-foreground">
-              Robot Control AI
+              Monkey See Monkey Do
             </h2>
             <div className="flex items-center gap-2">
               <div
-                className={`w-2 h-2 rounded-full ${isConnected ? "bg-neon animate-pulse" : "bg-destructive"}`}
+                className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-destructive"}`}
               />
               <p className="text-sm text-muted-foreground">
                 {isConnected ? "Connected to backend" : "Disconnected"}
@@ -342,7 +419,7 @@ export const ChatInterface = () => {
               className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               {message.sender === "bot" && (
-                <div className="p-2 bg-primary/20 rounded-lg h-fit">
+                <div className="p-2 bg-primary/0 rounded-lg h-fit">
                   {message.type === "error" ? (
                     <AlertCircle className="w-4 h-4 text-destructive" />
                   ) : message.type === "result" ? (

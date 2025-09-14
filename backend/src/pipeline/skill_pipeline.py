@@ -106,6 +106,7 @@ class SkillLearningPipeline:
             "plan": output_dir / "plan.json",
             "robot_instructions": output_dir / "robot_instructions.json",
             "servo_sequence": output_dir / "servo_sequence.json",
+            "servo_id_map": output_dir / "servo_id_map.json",
             "bundle": output_dir / "complete_bundle.json"
         }
         
@@ -119,6 +120,11 @@ class SkillLearningPipeline:
             # Save minimal servo sequence (no textual descriptions)
             minimal_seq = self.robot_controller.generate_minimal_servo_sequence(bundle.plan)
             self._save_json(files["servo_sequence"], minimal_seq)
+            # Save a compact legend mapping numeric IDs to servo names (no change to servo_sequence structure)
+            if hasattr(self.robot_controller, "SERVO_ID_MAP"):
+                # Ensure keys are strings for JSON serialization
+                id_map = {str(v): k for k, v in self.robot_controller.SERVO_ID_MAP.items()}
+                self._save_json(files["servo_id_map"], {"id_map": id_map})
             self._save_json(files["bundle"], bundle.to_dict())
             
             logger.info(f"Saved bundle to {output_dir}")

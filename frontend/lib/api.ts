@@ -59,14 +59,31 @@ export interface SkillBundle {
   };
 }
 
+export interface FinalMovementsCommand {
+  id: string;
+  deg: number;
+}
+
+export interface FinalMovementsStep {
+  commands: FinalMovementsCommand[];
+}
+
+export interface FinalMovementsPayload {
+  sequence: FinalMovementsStep[];
+}
+
 class SkillLearningAPI {
   private socket: Socket | null = null;
   private baseUrl = "http://localhost:5555";
+  private finalMovementsListeners: Array<
+    (payload: FinalMovementsPayload) => void
+  > = [];
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.socket = io(this.baseUrl, {
-        transports: ["websocket"],
+        // Prefer long-polling first for compatibility with Flask dev server, then upgrade
+        transports: ["polling", "websocket"],
         timeout: 10000,
       });
 
@@ -83,7 +100,43 @@ class SkillLearningAPI {
       this.socket.on("disconnect", () => {
         console.log("Disconnected from server");
       });
+
+      // Forward final_movements events to subscribers
+      this.socket.on("final_movements", (payload: FinalMovementsPayload) => {
+        console.log("🦾 final_movements received:", payload);
+        this.finalMovementsListeners.forEach((cb) => {
+          try {
+            cb(payload);
+          } catch (e) {
+            console.error("final_movements listener error", e);
+          }
+        });
+      });
     });
+  }
+
+  async calibrateRobot(): Promise<{ ok: boolean; message: string }> {
+    const url = `${this.baseUrl}/calibrate`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(text || `HTTP ${response.status}`);
+      }
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const data = (await response.json()) as { message?: string };
+        return { ok: true, message: data?.message || "Calibration triggered" };
+      }
+      const text = await response.text().catch(() => "");
+      return { ok: true, message: text || "Calibration triggered" };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Calibrate request failed: ${msg}`);
+    }
   }
 
   disconnect() {
@@ -114,6 +167,7 @@ class SkillLearningAPI {
       this.socket!.off("progress_update");
       this.socket!.off("processing_started");
       this.socket!.off("error");
+      // do not off("final_movements") here to preserve subscribers
 
       // Listen for progress updates
       this.socket!.on("progress_update", (update: SkillProcessingUpdate) => {
@@ -173,6 +227,17 @@ class SkillLearningAPI {
       throw new Error("Failed to get results");
     }
     return response.json();
+  }
+
+  onFinalMovements(
+    callback: (payload: FinalMovementsPayload) => void
+  ): () => void {
+    this.finalMovementsListeners.push(callback);
+    return () => {
+      this.finalMovementsListeners = this.finalMovementsListeners.filter(
+        (cb) => cb !== callback
+      );
+    };
   }
 }
 
