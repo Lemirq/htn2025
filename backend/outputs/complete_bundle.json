@@ -1,9 +1,9 @@
 {
-  "query": "do the one inch punch",
+  "query": "Learn how to wave",
   "sources": [],
   "guide": {
-    "query": "do the one inch punch",
-    "title": "Learning Guide: Do The One Inch Punch",
+    "query": "Learn how to wave",
+    "title": "Learning Guide: Learn How To Wave",
     "domain": "general",
     "prerequisites": [
       "Clear practice area",
@@ -65,7 +65,7 @@
     "difficulty_rating": 3
   },
   "plan": {
-    "skill": "Learning Guide: Do The One Inch Punch",
+    "skill": "Learning Guide: Learn How To Wave",
     "phases": [
       {
         "name": "preparation",
@@ -134,5 +134,309 @@
     "source_count": 0,
     "step_count": 4,
     "phase_count": 4
+  },
+  "robot_instructions": {
+    "skill_name": "Learning Guide: Learn How To Wave",
+    "overall_strategy": "Executing Learning Guide: Learn How To Wave through 4 coordinated phases. The robot will demonstrate proper form and technique by: 1. Preparation: Proper preparation ensures safe and effective practice. 2. Basic Technique: Building proper form is essential before adding speed or power. 3. Practice: Repetition builds muscle memory and confidence. 4. Application: Real-world application tests understanding and adaptability. Each movement is designed to build upon the previous phase, creating a fluid demonstration of the complete skill while maintaining safety and proper biomechanical principles.",
+    "robot_control_formats": {
+      "unlimited_dof": {
+        "description": "Full 6DOF control per arm with 3D positioning and orientation",
+        "coordinate_system": "right_handed_cartesian",
+        "units": {
+          "position": "meters",
+          "orientation": "radians"
+        },
+        "instructions": [
+          {
+            "step_name": "preparation",
+            "description": "relax and position - Proper preparation ensures safe and effective practice.",
+            "spatial_reasoning": "Neutral positioning for preparation: Balanced arm placement maintains readiness for subsequent movements.",
+            "left_arm_target": {
+              "x": 0.3,
+              "y": 0.2,
+              "z": 1.2,
+              "roll": 0,
+              "pitch": 0,
+              "yaw": 0
+            },
+            "right_arm_target": {
+              "x": 0.3,
+              "y": -0.2,
+              "z": 1.2,
+              "roll": 0,
+              "pitch": 0,
+              "yaw": 0
+            }
+          },
+          {
+            "step_name": "basic_technique",
+            "description": "smooth execution - Building proper form is essential before adding speed or power.",
+            "spatial_reasoning": "Neutral positioning for basic technique: Balanced arm placement maintains readiness for subsequent movements.",
+            "left_arm_target": {
+              "x": 0.3,
+              "y": 0.2,
+              "z": 1.2,
+              "roll": 0,
+              "pitch": 0,
+              "yaw": 0
+            },
+            "right_arm_target": {
+              "x": 0.3,
+              "y": -0.2,
+              "z": 1.2,
+              "roll": 0,
+              "pitch": 0,
+              "yaw": 0
+            }
+          },
+          {
+            "step_name": "practice",
+            "description": "smooth execution - Repetition builds muscle memory and confidence.",
+            "spatial_reasoning": "Neutral positioning for practice: Balanced arm placement maintains readiness for subsequent movements.",
+            "left_arm_target": {
+              "x": 0.3,
+              "y": 0.2,
+              "z": 1.2,
+              "roll": 0,
+              "pitch": 0,
+              "yaw": 0
+            },
+            "right_arm_target": {
+              "x": 0.3,
+              "y": -0.2,
+              "z": 1.2,
+              "roll": 0,
+              "pitch": 0,
+              "yaw": 0
+            }
+          },
+          {
+            "step_name": "application",
+            "description": "smooth execution - Real-world application tests understanding and adaptability.",
+            "spatial_reasoning": "Neutral positioning for application: Balanced arm placement maintains readiness for subsequent movements.",
+            "left_arm_target": {
+              "x": 0.3,
+              "y": 0.2,
+              "z": 1.2,
+              "roll": 0,
+              "pitch": 0,
+              "yaw": 0
+            },
+            "right_arm_target": {
+              "x": 0.3,
+              "y": -0.2,
+              "z": 1.2,
+              "roll": 0,
+              "pitch": 0,
+              "yaw": 0
+            }
+          }
+        ]
+      },
+      "three_dof_per_arm": {
+        "description": "3DOF servo control per arm (shoulder 2-axis + elbow 1-axis)",
+        "servo_specifications": {
+          "range": "0-180 degrees",
+          "axes_per_arm": {
+            "shoulder": [
+              "vertical (up/down)",
+              "horizontal (left/right)"
+            ],
+            "elbow": [
+              "vertical (up/down)"
+            ]
+          }
+        },
+        "instructions": [
+          {
+            "step_name": "preparation",
+            "description": "relax and position - Execute preparation",
+            "movement_reasoning": "Mapped 3D targets to servo angles: z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow_vertical. Phase 'preparation' translated to balanced, safe positions.",
+            "servo_commands": [
+              {
+                "servo_id": "left_shoulder_vertical",
+                "axis": "shoulder_vertical",
+                "position_degrees": 90.0,
+                "reasoning": "Higher z leads to raised left shoulder (90°)"
+              },
+              {
+                "servo_id": "left_shoulder_horizontal",
+                "axis": "shoulder_horizontal",
+                "position_degrees": 45.0,
+                "reasoning": "Positive y pulls left shoulder inward (45°)"
+              },
+              {
+                "servo_id": "left_elbow_vertical",
+                "axis": "elbow_vertical",
+                "position_degrees": 115.0,
+                "reasoning": "Forward x extends left elbow (115°)"
+              },
+              {
+                "servo_id": "right_shoulder_vertical",
+                "axis": "shoulder_vertical",
+                "position_degrees": 90.0,
+                "reasoning": "Higher z leads to raised right shoulder (90°)"
+              },
+              {
+                "servo_id": "right_shoulder_horizontal",
+                "axis": "shoulder_horizontal",
+                "position_degrees": 135.0,
+                "reasoning": "Negative y pulls right shoulder inward (135°)"
+              },
+              {
+                "servo_id": "right_elbow_vertical",
+                "axis": "elbow_vertical",
+                "position_degrees": 115.0,
+                "reasoning": "Forward x extends right elbow (115°)"
+              }
+            ],
+            "synchronous": true
+          },
+          {
+            "step_name": "basic_technique",
+            "description": "smooth execution - Execute basic technique",
+            "movement_reasoning": "Mapped 3D targets to servo angles: z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow_vertical. Phase 'basic_technique' translated to balanced, safe positions.",
+            "servo_commands": [
+              {
+                "servo_id": "left_shoulder_vertical",
+                "axis": "shoulder_vertical",
+                "position_degrees": 90.0,
+                "reasoning": "Higher z leads to raised left shoulder (90°)"
+              },
+              {
+                "servo_id": "left_shoulder_horizontal",
+                "axis": "shoulder_horizontal",
+                "position_degrees": 45.0,
+                "reasoning": "Positive y pulls left shoulder inward (45°)"
+              },
+              {
+                "servo_id": "left_elbow_vertical",
+                "axis": "elbow_vertical",
+                "position_degrees": 115.0,
+                "reasoning": "Forward x extends left elbow (115°)"
+              },
+              {
+                "servo_id": "right_shoulder_vertical",
+                "axis": "shoulder_vertical",
+                "position_degrees": 90.0,
+                "reasoning": "Higher z leads to raised right shoulder (90°)"
+              },
+              {
+                "servo_id": "right_shoulder_horizontal",
+                "axis": "shoulder_horizontal",
+                "position_degrees": 135.0,
+                "reasoning": "Negative y pulls right shoulder inward (135°)"
+              },
+              {
+                "servo_id": "right_elbow_vertical",
+                "axis": "elbow_vertical",
+                "position_degrees": 115.0,
+                "reasoning": "Forward x extends right elbow (115°)"
+              }
+            ],
+            "synchronous": true
+          },
+          {
+            "step_name": "practice",
+            "description": "smooth execution - Execute practice",
+            "movement_reasoning": "Mapped 3D targets to servo angles: z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow_vertical. Phase 'practice' translated to balanced, safe positions.",
+            "servo_commands": [
+              {
+                "servo_id": "left_shoulder_vertical",
+                "axis": "shoulder_vertical",
+                "position_degrees": 90.0,
+                "reasoning": "Higher z leads to raised left shoulder (90°)"
+              },
+              {
+                "servo_id": "left_shoulder_horizontal",
+                "axis": "shoulder_horizontal",
+                "position_degrees": 45.0,
+                "reasoning": "Positive y pulls left shoulder inward (45°)"
+              },
+              {
+                "servo_id": "left_elbow_vertical",
+                "axis": "elbow_vertical",
+                "position_degrees": 115.0,
+                "reasoning": "Forward x extends left elbow (115°)"
+              },
+              {
+                "servo_id": "right_shoulder_vertical",
+                "axis": "shoulder_vertical",
+                "position_degrees": 90.0,
+                "reasoning": "Higher z leads to raised right shoulder (90°)"
+              },
+              {
+                "servo_id": "right_shoulder_horizontal",
+                "axis": "shoulder_horizontal",
+                "position_degrees": 135.0,
+                "reasoning": "Negative y pulls right shoulder inward (135°)"
+              },
+              {
+                "servo_id": "right_elbow_vertical",
+                "axis": "elbow_vertical",
+                "position_degrees": 115.0,
+                "reasoning": "Forward x extends right elbow (115°)"
+              }
+            ],
+            "synchronous": true
+          },
+          {
+            "step_name": "application",
+            "description": "smooth execution - Execute application",
+            "movement_reasoning": "Mapped 3D targets to servo angles: z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow_vertical. Phase 'application' translated to balanced, safe positions.",
+            "servo_commands": [
+              {
+                "servo_id": "left_shoulder_vertical",
+                "axis": "shoulder_vertical",
+                "position_degrees": 90.0,
+                "reasoning": "Higher z leads to raised left shoulder (90°)"
+              },
+              {
+                "servo_id": "left_shoulder_horizontal",
+                "axis": "shoulder_horizontal",
+                "position_degrees": 45.0,
+                "reasoning": "Positive y pulls left shoulder inward (45°)"
+              },
+              {
+                "servo_id": "left_elbow_vertical",
+                "axis": "elbow_vertical",
+                "position_degrees": 115.0,
+                "reasoning": "Forward x extends left elbow (115°)"
+              },
+              {
+                "servo_id": "right_shoulder_vertical",
+                "axis": "shoulder_vertical",
+                "position_degrees": 90.0,
+                "reasoning": "Higher z leads to raised right shoulder (90°)"
+              },
+              {
+                "servo_id": "right_shoulder_horizontal",
+                "axis": "shoulder_horizontal",
+                "position_degrees": 135.0,
+                "reasoning": "Negative y pulls right shoulder inward (135°)"
+              },
+              {
+                "servo_id": "right_elbow_vertical",
+                "axis": "elbow_vertical",
+                "position_degrees": 115.0,
+                "reasoning": "Forward x extends right elbow (115°)"
+              }
+            ],
+            "synchronous": true
+          }
+        ]
+      }
+    },
+    "execution_metadata": {
+      "step_count": 4,
+      "safety_notes": [
+        "Ensure robot workspace is clear of obstacles and personnel",
+        "Verify servo position limits (0-180°) before execution",
+        "Monitor servo temperatures during extended operation",
+        "Emergency stop must be accessible at all times",
+        "Test movements at reduced speed before full execution",
+        "Complex multi-phase movement - verify each step individually"
+      ]
+    }
   }
 }

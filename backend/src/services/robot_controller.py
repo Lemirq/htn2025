@@ -149,6 +149,17 @@ class RobotControlGenerator:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
         # Initialize Cohere servo planner (falls back to heuristics if not available)
         self.servo_planner = CohereServoPlanner(llm_config or LLMConfig())
+        # Integer ID mapping for compact actuator commands
+        # 1:left_shoulder_vertical, 2:left_shoulder_horizontal, 3:left_elbow_vertical,
+        # 4:right_shoulder_vertical, 5:right_shoulder_horizontal, 6:right_elbow_vertical
+        self.SERVO_ID_MAP: Dict[str, int] = {
+            "left_shoulder_vertical": 1,
+            "left_shoulder_horizontal": 2,
+            "left_elbow_vertical": 3,
+            "right_shoulder_vertical": 4,
+            "right_shoulder_horizontal": 5,
+            "right_elbow_vertical": 6,
+        }
     
     def generate_robot_instructions(self, execution_plan: ExecutionPlan) -> RobotControlInstructions:
         """Generate complete robot control instructions from execution plan."""
@@ -273,12 +284,12 @@ class RobotControlGenerator:
                 last_angles.update(smoothed)
 
                 commands = [
-                    {"id": "left_shoulder_vertical", "deg": smoothed["left_shoulder_vertical"]},
-                    {"id": "left_shoulder_horizontal", "deg": smoothed["left_shoulder_horizontal"]},
-                    {"id": "left_elbow_vertical", "deg": smoothed["left_elbow_vertical"]},
-                    {"id": "right_shoulder_vertical", "deg": smoothed["right_shoulder_vertical"]},
-                    {"id": "right_shoulder_horizontal", "deg": smoothed["right_shoulder_horizontal"]},
-                    {"id": "right_elbow_vertical", "deg": smoothed["right_elbow_vertical"]},
+                    {"id": self.SERVO_ID_MAP["left_shoulder_vertical"], "deg": smoothed["left_shoulder_vertical"]},
+                    {"id": self.SERVO_ID_MAP["left_shoulder_horizontal"], "deg": smoothed["left_shoulder_horizontal"]},
+                    {"id": self.SERVO_ID_MAP["left_elbow_vertical"], "deg": smoothed["left_elbow_vertical"]},
+                    {"id": self.SERVO_ID_MAP["right_shoulder_vertical"], "deg": smoothed["right_shoulder_vertical"]},
+                    {"id": self.SERVO_ID_MAP["right_shoulder_horizontal"], "deg": smoothed["right_shoulder_horizontal"]},
+                    {"id": self.SERVO_ID_MAP["right_elbow_vertical"], "deg": smoothed["right_elbow_vertical"]},
                 ]
                 sequence.append({"seq_num": seq_counter, "commands": commands})
                 seq_counter += 1
