@@ -329,7 +329,7 @@ Return ONLY the JSON structure - no additional text or formatting."""
                 "Guide generation request prepared: query='%s', sources=%d, model='%s', temp=%s, max_tokens=%s, system_len=%d, user_len=%d",
                 query,
                 len(sources),
-                getattr(self.config, "model", "command-r-plus"),
+                getattr(self.config, "model", "command-a-03-2025"),
                 getattr(self.config, "temperature", 0.2),
                 getattr(self.config, "max_tokens", 1200),
                 len(system_prompt or ""),
@@ -342,7 +342,7 @@ Return ONLY the JSON structure - no additional text or formatting."""
                 "Guide generation request prepared: query='%s', sources=%d, model='%s', temp=%s, max_tokens=%s, system_len=%d, user_len=%d",
                 user_prompt,
                 len(sources),
-                getattr(self.config, "model", "command-r-plus"),
+                getattr(self.config, "model", "command-a-03-2025"),
                 getattr(self.config, "temperature", 0.2),
                 getattr(self.config, "max_tokens", 1200),
                 len(system_prompt or ""),
@@ -350,8 +350,9 @@ Return ONLY the JSON structure - no additional text or formatting."""
             )
             print("Sending guide generation request")
             response = self.client.chat(
-                model=getattr(self.config, "model", "command-r-plus"),
+                model=getattr(self.config, "model", "command-a-03-2025"),
                 message=user_prompt,
+                response_format={"type": "json_object"},
                 preamble=system_prompt,
                 temperature=float(getattr(self.config, "temperature", 0.2) or 0.2),
                 max_tokens=int(getattr(self.config, "max_tokens", 1200) or 1200),
@@ -775,6 +776,7 @@ class CohereServoPlanner:
                 model=self.config.model,
                 message=user_prompt,
                 preamble=system_prompt,
+                response_format={"type": "json_object"},
                 temperature=min(getattr(self.config, "temperature", 0.2), 0.1),
                 max_tokens=min(getattr(self.config, "max_tokens", 4000), 600),
             )
@@ -804,9 +806,10 @@ class CohereServoPlanner:
 
         try:
             response = self.client.chat(
-                model=getattr(self.config, "model", "command-r-plus"),
+                model=getattr(self.config, "model", "command-a-03-2025"),
                 message=user_prompt,
                 preamble=system_prompt,
+                response_format={"type": "json_object"},
                 temperature=0.1,
                 max_tokens=700,
             )

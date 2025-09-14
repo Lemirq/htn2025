@@ -1,134 +1,83 @@
 {
-  "query": "learn one inch punch",
-  "title": "How to Throw a One-Inch Punch",
-  "domain": "martial_arts",
+  "query": "dab towards the left side",
+  "title": "How to Dab Towards the Left Side",
+  "domain": "general",
   "prerequisites": [
-    "basic fitness level",
-    "some martial arts experience is beneficial but not essential"
+    "No prior experience required"
   ],
   "safety": [
-    "Ensure adequate warm-up and stretching before attempting any punches.",
-    "Do not attempt on concrete or hard surfaces - use a padded striking surface or heavy bag.",
-    "Wear hand wraps and gloves to protect your wrists and hands.",
-    "Always practice with a partner who can provide spotting and feedback."
+    "Ensure you are in an open space to avoid hitting objects or people",
+    "Do not attempt if you have any shoulder or arm injuries"
   ],
   "equipment": [
-    "padded striking surface or heavy bag",
-    "hand wraps",
-    "boxing/martial arts gloves",
-    "optional: mouth guard"
+    "None"
   ],
   "core_principles": [
-    "The power of the one-inch punch comes from proper body mechanics, not arm strength.",
-    "Focus on transferring your body weight and generating force from your core and legs.",
-    "Maintain a relaxed arm until the moment of impact for maximum speed and force.",
-    "Practice precise timing and distance control for effective execution."
+    "The dab is a simple dance move that involves dropping your head to one side while raising the opposite arm",
+    "It's important to maintain balance and control throughout the movement"
   ],
   "steps": [
     {
-      "name": "Basic Stance and Posture",
-      "how": "Stand with your feet shoulder-width apart, toes pointed forward. Keep your knees bent and back straight, with your weight distributed evenly on both legs.",
-      "why": "This provides a stable base and helps generate power from your legs.",
-      "citations": [
-        0,
-        1,
-        2
-      ],
+      "name": "Starting Position",
+      "how": "Stand with your feet shoulder-width apart, arms relaxed at your sides",
+      "why": "This position provides a stable base for the movement",
+      "citations": [],
       "difficulty_level": 1,
-      "cues": "Imagine you're sitting back into a chair to find the right knee bend.",
+      "cues": "Keep your knees slightly bent for better balance",
       "common_mistakes": [
-        "locking knees",
-        "leaning too far forward or backward"
+        "Standing too stiffly, which can lead to loss of balance"
       ]
     },
     {
-      "name": "Arm Position and Relaxation",
-      "how": "Hold your arms up, elbows bent and relaxed, with your fists near your chest. Keep your shoulders down and relaxed, and your elbows close to your body.",
-      "why": "This position allows for a quick, snapping motion and utilizes the full range of motion in your arms.",
-      "citations": [
-        0,
-        2,
-        3
-      ],
+      "name": "Raise Your Right Arm",
+      "how": "Slowly raise your right arm to shoulder height, keeping it straight",
+      "why": "This sets up the opposite arm movement required for the dab",
+      "citations": [],
       "difficulty_level": 1,
-      "cues": "Focus on keeping your arms and shoulders loose and springy.",
+      "cues": "Imagine you're pointing to something directly in front of you",
       "common_mistakes": [
-        "tensing arms and shoulders too early",
-        "holding fists too far away from the body"
+        "Raising the arm too high or too low"
       ]
     },
     {
-      "name": "Weight Shift and Rotation",
-      "how": "Shift your weight onto your back leg, then quickly shift it forward onto your front leg while rotating your hips and torso. This weight transfer and rotation adds power to the punch.",
-      "why": "This movement engages your core and larger muscle groups, generating more force.",
-      "citations": [
-        1,
-        2,
-        4
-      ],
+      "name": "Drop Your Head to the Left",
+      "how": "Simultaneously drop your head to the left side, aligning your face with your left armpit",
+      "why": "This is the signature movement of the dab",
+      "citations": [],
       "difficulty_level": 2,
-      "cues": "Think of 'sitting back' on your back leg, then exploding forward.",
+      "cues": "Keep your eyes focused downward to maintain the position",
       "common_mistakes": [
-        "not shifting weight fully onto the front leg",
-        "rotating the torso too early or too late"
+        "Dropping the head too far forward or backward"
       ]
     },
     {
-      "name": "Snap the Punch",
-      "how": "As your weight shifts forward, snap your punching arm straight out, rotating your fist so your knuckles are facing down at impact. Keep your arm relaxed until the moment of impact, then immediately retract.",
-      "why": "Relaxing the arm increases speed, and the snapping motion adds force to the punch.",
-      "citations": [
-        2,
-        3,
-        4
-      ],
-      "difficulty_level": 3,
-      "cues": "Focus on speed and a sudden release of tension, like a whip.",
+      "name": "Hold the Position",
+      "how": "Hold the dab position for 1-2 seconds, maintaining balance and control",
+      "why": "This allows you to fully execute the move and prepare for the next step",
+      "citations": [],
+      "difficulty_level": 1,
+      "cues": "Breathe steadily to stay relaxed",
       "common_mistakes": [
-        "tensing the arm too early",
-        "not retracting the arm quickly after impact"
+        "Holding the position for too long, which can lead to discomfort"
       ]
     },
     {
-      "name": "Distance and Timing",
-      "how": "Practice gauging the correct distance for the punch by starting with your fist one inch away from the target. Time your punch so that your arm is fully extended just as your fist makes contact.",
-      "why": "This step ensures you understand the precise timing and distance required for maximum effect.",
-      "citations": [
-        0,
-        1,
-        3
-      ],
-      "difficulty_level": 4,
-      "cues": "Visualize your arm as a coiled spring, releasing its energy at the perfect moment.",
+      "name": "Return to Starting Position",
+      "how": "Slowly raise your head and lower your right arm back to your side",
+      "why": "This completes the dab movement and prepares you for repetition or the next dance move",
+      "citations": [],
+      "difficulty_level": 1,
+      "cues": "Move smoothly to maintain the flow of the dance",
       "common_mistakes": [
-        "starting the punch too far away",
-        "not fully extending the arm at the right time"
-      ]
-    },
-    {
-      "name": "Combine the Elements",
-      "how": "Integrate all the previous steps into one fluid motion: stance, arm relaxation, weight shift, rotation, and snapping the punch. Practice slowly at first, then increase speed as you gain control.",
-      "why": "This step brings together all the individual components to create a powerful one-inch punch.",
-      "citations": [
-        0,
-        1,
-        2,
-        3,
-        4
-      ],
-      "difficulty_level": 5,
-      "cues": "Focus on smoothness and precision. Ensure each element flows into the next without hesitation.",
-      "common_mistakes": [
-        "rushing the movement",
-        "forgetting to relax the arm until impact"
+        "Returning to the starting position too quickly or abruptly"
       ]
     }
   ],
   "evaluation": [
-    "You should feel a 'whip-like' sensation and sense of power coming from your core and legs, not just your arms.",
-    "You can deliver a powerful punch from a very short distance, demonstrating control and precision."
+    "Able to perform the dab towards the left side with proper form and balance",
+    "Can hold the position steadily for 1-2 seconds"
   ],
   "sources": [],
-  "estimated_learning_time": "3-4 weeks of consistent practice (3-4 times per week) for basic proficiency",
-  "difficulty_rating": 4
+  "estimated_learning_time": "10-15 minutes",
+  "difficulty_rating": 1
 }

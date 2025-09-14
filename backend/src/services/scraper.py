@@ -156,6 +156,7 @@ class WebScraper:
         self.domain_classifier = DomainClassifier()
         self.source_weighter = SourceWeighter(config)
         self.content_extractor = ContentExtractor(config)
+        self.last_search_urls: List[str] = []
         
         # Initialize Tavily client
         tavily_api_key = os.getenv("TAVILY_API_KEY")
@@ -192,7 +193,10 @@ class WebScraper:
             )]
             other_urls = [u for u in urls if u not in trusted_urls]
             
-            return (trusted_urls + other_urls)[:max_results]
+            ordered = (trusted_urls + other_urls)[:max_results]
+            # Store last search URLs for visibility in progress updates
+            self.last_search_urls = ordered
+            return ordered
             
         except Exception as e:
             logger.error(f"Tavily search failed: {e}")

@@ -17,7 +17,7 @@ export const RobotControlPlatform = () => {
         </div>
 
         {/* Right Panel - Chat Interface */}
-        <div className="w-96 py-4 pr-2">
+        <div className="w-[400px] py-4 pr-2">
           <div className="h-full bg-gradient-glass backdrop-blur-glass border border-glass-border rounded-xl shadow-glass overflow-hidden">
             <ChatInterface />
           </div>

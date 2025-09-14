@@ -1,95 +1,59 @@
 {
-  "skill": "How to Throw a One-Inch Punch",
+  "skill": "How to Dab Towards the Left Side",
   "phases": [
     {
-      "name": "basic_stance_and_posture",
-      "duration_ms": 400,
-      "cue": "Imagine you're sitting back into a chair to find the right knee bend.",
-      "pose_hints": "Stand with your feet shoulder-width apart, toes pointed forward. Keep your knees bent and back straight, with your weight distributed evenly on both legs.",
-      "rationale": "This provides a stable base and helps generate power from your legs.",
-      "citations": [
-        0,
-        1,
-        2
-      ],
-      "velocity_profile": "slow",
-      "force_profile": "controlled"
-    },
-    {
-      "name": "arm_position_and_relaxation",
+      "name": "starting_position",
       "duration_ms": 500,
-      "cue": "Focus on keeping your arms and shoulders loose and springy.",
-      "pose_hints": "Hold your arms up, elbows bent and relaxed, with your fists near your chest. Keep your shoulders down and relaxed, and your elbows close to your body.",
-      "rationale": "This position allows for a quick, snapping motion and utilizes the full range of motion in your arms.",
-      "citations": [
-        0,
-        2,
-        3
-      ],
+      "cue": "Keep your knees slightly bent for better balance",
+      "pose_hints": "Stand with your feet shoulder-width apart, arms relaxed at your sides",
+      "rationale": "This position provides a stable base for the movement",
+      "citations": [],
       "velocity_profile": "medium",
       "force_profile": "controlled"
     },
     {
-      "name": "weight_shift_and_rotation",
+      "name": "raise_your_right_arm",
+      "duration_ms": 500,
+      "cue": "Imagine you're pointing to something directly in front of you",
+      "pose_hints": "Slowly raise your right arm to shoulder height, keeping it straight",
+      "rationale": "This sets up the opposite arm movement required for the dab",
+      "citations": [],
+      "velocity_profile": "medium",
+      "force_profile": "controlled"
+    },
+    {
+      "name": "drop_your_head_to_the_left",
       "duration_ms": 600,
-      "cue": "Think of 'sitting back' on your back leg, then exploding forward.",
-      "pose_hints": "Shift your weight onto your back leg, then quickly shift it forward onto your front leg while rotating your hips and torso. This weight transfer and rotation adds power to the punch.",
-      "rationale": "This movement engages your core and larger muscle groups, generating more force.",
-      "citations": [
-        1,
-        2,
-        4
-      ],
+      "cue": "Keep your eyes focused downward to maintain the position",
+      "pose_hints": "Simultaneously drop your head to the left side, aligning your face with your left armpit",
+      "rationale": "This is the signature movement of the dab",
+      "citations": [],
       "velocity_profile": "medium",
       "force_profile": "controlled"
     },
     {
-      "name": "snap_the_punch",
-      "duration_ms": 210,
-      "cue": "Focus on speed and a sudden release of tension, like a whip.",
-      "pose_hints": "As your weight shifts forward, snap your punching arm straight out, rotating your fist so your knuckles are facing down at impact. Keep your arm relaxed until the moment of impact, then immediately retract.",
-      "rationale": "Relaxing the arm increases speed, and the snapping motion adds force to the punch.",
-      "citations": [
-        2,
-        3,
-        4
-      ],
-      "velocity_profile": "explosive",
-      "force_profile": "maximum"
-    },
-    {
-      "name": "distance_and_timing",
-      "duration_ms": 768,
-      "cue": "Visualize your arm as a coiled spring, releasing its energy at the perfect moment.",
-      "pose_hints": "Practice gauging the correct distance for the punch by starting with your fist one inch away from the target. Time your punch so that your arm is fully extended just as your fist makes contact.",
-      "rationale": "This step ensures you understand the precise timing and distance required for maximum effect.",
-      "citations": [
-        0,
-        1,
-        3
-      ],
-      "velocity_profile": "slow",
+      "name": "hold_the_position",
+      "duration_ms": 500,
+      "cue": "Breathe steadily to stay relaxed",
+      "pose_hints": "Hold the dab position for 1-2 seconds, maintaining balance and control",
+      "rationale": "This allows you to fully execute the move and prepare for the next step",
+      "citations": [],
+      "velocity_profile": "medium",
       "force_profile": "controlled"
     },
     {
-      "name": "combine_the_elements",
-      "duration_ms": 900,
-      "cue": "Focus on smoothness and precision. Ensure each element flows into the next without hesitation.",
-      "pose_hints": "Integrate all the previous steps into one fluid motion: stance, arm relaxation, weight shift, rotation, and snapping the punch. Practice slowly at first, then increase speed as you gain control.",
-      "rationale": "This step brings together all the individual components to create a powerful one-inch punch.",
-      "citations": [
-        0,
-        1,
-        2,
-        3,
-        4
-      ],
+      "name": "return_to_starting_position",
+      "duration_ms": 500,
+      "cue": "Move smoothly to maintain the flow of the dance",
+      "pose_hints": "Slowly raise your head and lower your right arm back to your side",
+      "rationale": "This completes the dab movement and prepares you for repetition or the next dance move",
+      "citations": [],
       "velocity_profile": "medium",
       "force_profile": "controlled"
     }
   ],
   "constraints": {
-    "max_velocity_hint": 0.786,
+    "max_velocity_hint": 0.82872,
     "keep_com_in_base": true,
     "workspace_hint": "short to medium range combat movements",
     "joint_limits": {
@@ -99,12 +63,12 @@
       "knee_flexion": 135.0
     },
     "safety_margins": {
-      "impact_force": 0.7366666666666667,
-      "joint_stress": 0.6366666666666666,
-      "balance_threshold": 0.8366666666666667
+      "impact_force": 0.7604000000000001,
+      "joint_stress": 0.6604,
+      "balance_threshold": 0.8604
     }
   },
   "provenance": [],
-  "total_duration_ms": 3378,
-  "complexity_score": 1.538
+  "total_duration_ms": 2600,
+  "complexity_score": 1.26
 }

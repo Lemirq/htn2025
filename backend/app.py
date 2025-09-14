@@ -87,9 +87,12 @@ async def process_skill_with_streaming(query: str, session_id: str, max_sources:
         # Step 1: Scraping
         processor.emit_progress("Scraping sources", 10)
         sources = await pipeline.scraper.scrape_query(query, max_sources or 5)
+        # Include attempted URLs for transparency
+        attempted_urls = getattr(pipeline.scraper, 'last_search_urls', []) or []
         processor.emit_progress("Sources found", 30, {
             'source_count': len(sources),
-            'sources': [{'title': s.title, 'url': s.url, 'quality': s.quality_score} for s in sources[:3]]
+            'sources': [{'title': s.title, 'url': s.url, 'quality': s.quality_score} for s in sources[:3]],
+            'attempted_urls': attempted_urls
         })
         
         # Step 2: Guide generation
@@ -193,80 +196,76 @@ async def process_skill_with_streaming(query: str, session_id: str, max_sources:
                 logger.info(f"Session {session_id}: Emitted final_movements event (sequence_len={seq_len})")
                 print(f"[{session_id}] Emitted final_movements (sequence_len={seq_len})")
 
-                # Optionally send sequence to robot over HTTP if configured
+                # Optionally send servo actions to robot over HTTP one-by-one if configured
                 robot_base_url = getattr(pipeline.config, 'robot_base_url', None)
                 if robot_base_url:
-                    # Prevent duplicate sequence posts per session
                     if session_id in posted_sequence_sessions:
                         logger.info(f"Session {session_id}: Robot sequence already posted; skipping duplicate send")
                         print(f"[{session_id}] Robot sequence already posted; skipping duplicate send")
                     else:
                         posted_sequence_sessions.add(session_id)
-                        robot_post_mode = getattr(pipeline.config, 'robot_post_mode', 'servos')
-                        logger.info(
-                            "Session %s: Preparing robot POST (base_url=%s, mode=%s, sequence_len=%s)",
-                            session_id,
-                            robot_base_url,
-                            robot_post_mode,
-                            seq_len,
-                        )
-                        print(f"[{session_id}] Preparing robot POST base_url={robot_base_url}, mode={robot_post_mode}, sequence_len={seq_len}")
-                        def post_sequence_to_robot(payload: Dict[str, Any]):
-                            try:
-                                base = robot_base_url.rstrip('/')
-                                if not (base.startswith('http://') or base.startswith('https://')):
-                                    base = f"http://{base}"
-                                if robot_post_mode == 'sequence':
-                                    # Send entire sequence to a /sequence endpoint if supported downstream
-                                    url = f"{base}/sequence"
-                                    print(f"[{session_id}] Posting full sequence to {url}")
-                                    with httpx.Client(timeout=10.0) as client:
-                                        resp = client.post(url, json=payload)
-                                        if resp.status_code >= 400:
-                                            logger.warning(f"Robot responded {resp.status_code}: {resp.text}")
-                                            print(f"[{session_id}] Robot responded {resp.status_code} to /sequence")
-                                        else:
-                                            logger.info("Posted full sequence to robot successfully")
-                                            print(f"[{session_id}] Posted full sequence successfully")
-                                else:
-                                    # Default: stream per-step angles to firmware /sequence endpoint
-                                    # Maintain last-known angles; start neutral 90 deg for all 6
-                                    angles = [90, 90, 90, 90, 90, 90]
-                                    id_to_index = {
-                                        "left_shoulder_vertical": 0,
-                                        "left_shoulder_horizontal": 1,
-                                        "left_elbow_vertical": 2,
-                                        "right_shoulder_vertical": 3,
-                                        "right_shoulder_horizontal": 4,
-                                        "right_elbow_vertical": 5,
-                                    }
-                                    sequence = payload.get('sequence', []) or []
-                                    url = f"{base}/sequence"
-                                    with httpx.Client(timeout=5.0) as client:
-                                        logger.debug("Starting step-wise robot POST to %s with %d steps", url, len(sequence))
-                                        print(f"[{session_id}] Streaming {len(sequence)} steps to {url}")
-                                        for step in sequence:
-                                            try:
-                                                cmds = step.get('commands', []) or []
-                                                for cmd in cmds:
-                                                    sid = cmd.get('id')
-                                                    deg = int(cmd.get('deg', 90))
-                                                    idx = id_to_index.get(sid, None)
-                                                    if idx is not None and 0 <= idx < 6:
-                                                        angles[idx] = max(0, min(180, deg))
-                                                resp = client.post(url, json={"angles": angles})
-                                                if resp.status_code >= 400:
-                                                    logger.warning(f"Robot responded {resp.status_code}: {resp.text}")
-                                                    print(f"[{session_id}] Robot responded {resp.status_code} to /sequence")
-                                                time.sleep(0.2)
-                                            except Exception as step_err:
-                                                logger.warning(f"Robot step post failed: {step_err}")
-                                                print(f"[{session_id}] Robot step post failed: {step_err}")
-                            except Exception as e:
-                                logger.error(f"Failed to send servo sequence to robot: {e}")
-                                print(f"[{session_id}] Failed to send servo sequence: {e}")
+                        try:
+                            base = robot_base_url.rstrip('/')
+                            if not (base.startswith('http://') or base.startswith('https://')):
+                                base = f"http://{base}"
+                            logger.info(
+                                "Session %s: Posting %d steps as individual /servo commands",
+                                session_id,
+                                seq_len,
+                            )
+                            print(f"[{session_id}] Posting {seq_len} steps as individual /servo commands")
 
-                        threading.Thread(target=post_sequence_to_robot, args=(servo_payload,), daemon=True).start()
+                            steps = servo_payload.get('sequence', []) or []
+                            commands_sent = 0
+                            errors = 0
+                            with httpx.Client(timeout=2.0) as client:
+                                for step_index, step in enumerate(steps):
+                                    commands = (step or {}).get('commands', []) or []
+                                    print(f"[{session_id}] Step {step_index+1}/{len(steps)}: sending {len(commands)} commands")
+                                    for cmd in commands:
+                                        try:
+                                            servo_id = int(cmd.get('id'))
+                                            angle = int(cmd.get('deg'))
+                                        except Exception:
+                                            logger.warning("Invalid command format encountered: %s", cmd)
+                                            errors += 1
+                                            continue
+
+                                        if angle < 0:
+                                            angle = 0
+                                        if angle > 180:
+                                            angle = 180
+
+                                        url = f"{base}/servo"
+                                        resp = client.post(url, json={"id": servo_id, "angle": angle})
+                                        if resp.status_code >= 400:
+                                            errors += 1
+                                            logger.warning(
+                                                "Robot /servo error %s: %s (id=%s angle=%s)",
+                                                resp.status_code,
+                                                resp.text,
+                                                servo_id,
+                                                angle,
+                                            )
+                                            print(f"[{session_id}] /servo -> {resp.status_code} (id={servo_id} angle={angle})")
+                                        else:
+                                            commands_sent += 1
+                                        # Small delay to avoid flooding the microcontroller
+                                        time.sleep(0.02)
+
+                                    # Slight delay between steps for motion settling
+                                    time.sleep(0.1)
+
+                            logger.info(
+                                "Session %s: Finished posting servo commands (ok=%d, errors=%d)",
+                                session_id,
+                                commands_sent,
+                                errors,
+                            )
+                            print(f"[{session_id}] Finished posting servo commands (ok={commands_sent}, errors={errors})")
+                        except Exception as e:
+                            logger.error(f"Failed to send servo sequence to robot: {e}")
+                            print(f"[{session_id}] Failed to send servo sequence: {e}")
                 else:
                     logger.info("ROBOT_BASE_URL not set; skipping robot POST")
                     print(f"[{session_id}] ROBOT_BASE_URL not set; skipping robot POST")
@@ -357,12 +356,12 @@ def calibrate_robot():
                     'robot_response': body
                 })
         except Exception as primary_err:
-            # Fallback: if /calibrate not supported, send neutral angles via /sequence
+            # Fallback: if /calibrate not supported, send neutral angles via /servos
             try:
                 base = robot_base_url.rstrip('/')
                 if not (base.startswith('http://') or base.startswith('https://')):
                     base = f"http://{base}"
-                servos_url = f"{base}/sequence"
+                servos_url = f"{base}/servos"
                 neutral = {'angles': [90, 90, 90, 90, 90, 90]}
                 logger.info(f"Calibration fallback: POST neutral pose to {servos_url}")
                 with httpx.Client(timeout=5.0) as client:

@@ -23,6 +23,7 @@ interface ProgressData {
   difficulty?: number;
   bundle?: SkillBundle;
   error?: string;
+  attempted_urls?: string[];
 }
 
 interface Message {
@@ -60,6 +61,12 @@ export const ChatInterface = () => {
     progress: 0,
     isActive: false,
   });
+
+  // Keep a running list of scraped sources from progress updates
+  const [scrapedSources, setScrapedSources] = useState<
+    Array<{ title: string; url: string; quality: number }>
+  >([]);
+  const [attemptedUrls, setAttemptedUrls] = useState<string[]>([]);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -200,19 +207,42 @@ export const ChatInterface = () => {
           data: update.data,
         });
 
-        // Add intermediate progress messages for key milestones
-        if (update.data && update.progress === 30) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `progress_${Date.now()}`,
-              content: `📚 Found ${update.data?.source_count} sources for learning this movement.`,
-              sender: "bot",
-              timestamp: new Date(),
-              type: "text",
-            },
-          ]);
+        // Collect sources as they arrive (step ~30%)
+        if (update?.data?.sources && update.data.sources.length > 0) {
+          setScrapedSources((prev) => {
+            const byUrl = new Map(prev.map((s) => [s.url, s]));
+            for (const s of update.data!.sources!) {
+              if (!byUrl.has(s.url)) byUrl.set(s.url, s);
+            }
+            return Array.from(byUrl.values());
+          });
         }
+
+        // Collect attempted URLs for transparency even if none pass filters
+        if (
+          update?.data?.attempted_urls &&
+          update.data.attempted_urls.length > 0
+        ) {
+          setAttemptedUrls((prev) => {
+            const set = new Set(prev);
+            update.data!.attempted_urls!.forEach((u: string) => set.add(u));
+            return Array.from(set);
+          });
+        }
+
+        // Add intermediate progress messages for key milestones
+        // if (update.data && update.progress === 30) {
+        //   setMessages((prev) => [
+        //     ...prev,
+        //     {
+        //       id: `progress_${Date.now()}`,
+        //       content: `📚 Found ${update.data?.source_count} sources for learning this movement.`,
+        //       sender: "bot",
+        //       timestamp: new Date(),
+        //       type: "text",
+        //     },
+        //   ]);
+        // }
 
         if (update.data && update.progress === 70) {
           setMessages((prev) => [
@@ -247,6 +277,9 @@ export const ChatInterface = () => {
               type: "text",
             },
           ]);
+          // Reset progress sources after completion
+          setScrapedSources([]);
+          setAttemptedUrls([]);
         }
 
         if (update.progress === -1) {
@@ -309,7 +342,7 @@ export const ChatInterface = () => {
     if (message.type === "result" && message.data) {
       const bundle = message.data as SkillBundle;
       return (
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <p className="text-sm">{message.content}</p>
 
           {/* Skill Overview */}
@@ -365,6 +398,55 @@ export const ChatInterface = () => {
             )}
           </div>
 
+          {/* Sources */}
+          {bundle.sources && bundle.sources.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-neon-secondary">
+                📚 Sources ({bundle.sources.length}):
+              </h4>
+              <div className="space-y-2">
+                {bundle.sources.slice(0, 5).map((source, index) => (
+                  <div key={index} className="bg-muted/20 rounded-lg p-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium text-neon hover:underline"
+                        >
+                          {source.title || new URL(source.url).hostname}
+                        </a>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {source.snippet?.substring(0, 120)}...
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground ml-2">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-xs ${
+                            source.source_type === "academic"
+                              ? "bg-blue-500/20 text-blue-300"
+                              : source.source_type === "video"
+                                ? "bg-red-500/20 text-red-300"
+                                : "bg-gray-500/20 text-gray-300"
+                          }`}
+                        >
+                          {source.source_type}
+                        </span>
+                        <span>⭐{(source.weight * 5).toFixed(1)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {bundle.sources.length > 5 && (
+                  <div className="text-xs text-muted-foreground">
+                    +{bundle.sources.length - 5} more sources...
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Safety Guidelines */}
           {bundle.guide.safety.length > 0 && (
             <div className="space-y-2">
@@ -416,7 +498,7 @@ export const ChatInterface = () => {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex gap-3 w-full ${message.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               {message.sender === "bot" && (
                 <div className="p-2 bg-primary/0 rounded-lg h-fit">
@@ -459,7 +541,7 @@ export const ChatInterface = () => {
 
           {/* Progress Indicator */}
           {progressState.isActive && (
-            <div className="flex gap-3">
+            <div className="flex gap-3 w-full">
               <div className="p-2 bg-primary/20 rounded-lg h-fit">
                 <Loader2 className="w-4 h-4 text-primary animate-spin" />
               </div>
@@ -478,6 +560,69 @@ export const ChatInterface = () => {
                     style={{ width: `${progressState.progress}%` }}
                   />
                 </div>
+
+                {/* Show scraped websites if available */}
+                {scrapedSources.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-xs font-medium text-neon-secondary mb-1">
+                      Websites scraped ({scrapedSources.length}):
+                    </div>
+                    <ul className="space-y-1">
+                      {scrapedSources.slice(0, 6).map((s) => (
+                        <li
+                          key={s.url}
+                          className="text-xs text-muted-foreground truncate"
+                        >
+                          <a
+                            href={s.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                            title={s.title || s.url}
+                          >
+                            {s.title || s.url}
+                          </a>
+                        </li>
+                      ))}
+                      {scrapedSources.length > 6 && (
+                        <li className="text-xs text-muted-foreground">
+                          +{scrapedSources.length - 6} more…
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Fallback: attempted URLs if no accepted sources */}
+                {scrapedSources.length === 0 && attemptedUrls.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-xs font-medium text-neon-secondary mb-1">
+                      Websites scraped ({attemptedUrls.length}):
+                    </div>
+                    <ul className="space-y-1">
+                      {attemptedUrls.slice(0, 6).map((u) => (
+                        <li
+                          key={u}
+                          className="text-xs text-muted-foreground truncate"
+                        >
+                          <a
+                            href={u}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            {u.split("/")}
+                          </a>
+                        </li>
+                      ))}
+                      {attemptedUrls.length > 6 && (
+                        <li className="text-xs text-muted-foreground">
+                          +{attemptedUrls.length - 6} more…
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           )}

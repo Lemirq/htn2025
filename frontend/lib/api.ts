@@ -7,6 +7,7 @@ export interface SkillProcessingUpdate {
   data?: {
     source_count?: number;
     sources?: Array<{ title: string; url: string; quality: number }>;
+    attempted_urls?: string[];
     title?: string;
     step_count?: number;
     difficulty?: number;
@@ -19,6 +20,15 @@ export interface SkillProcessingUpdate {
 
 export interface SkillBundle {
   query: string;
+  sources: Array<{
+    url: string;
+    title: string;
+    snippet: string;
+    weight: number;
+    confidence: number;
+    source_type: string;
+    domain_relevance: number;
+  }>;
   guide: {
     title: string;
     domain: string;
