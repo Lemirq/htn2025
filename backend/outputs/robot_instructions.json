@@ -1,6 +1,6 @@
 {
-  "skill_name": "Learning Guide: Learn How To Punch Properly",
-  "overall_strategy": "Executing Learning Guide: Learn How To Punch Properly through 4 coordinated phases. The robot will demonstrate proper form and technique by: 1. Preparation: Proper preparation ensures safe and effective practice. 2. Basic Technique: Building proper form is essential before adding speed or power. 3. Practice: Repetition builds muscle memory and confidence. 4. Application: Real-world application tests understanding and adaptability. Each movement is designed to build upon the previous phase, creating a fluid demonstration of the complete skill while maintaining safety and proper biomechanical principles.",
+  "skill_name": "Learning Guide: Learn How To Wave",
+  "overall_strategy": "Executing Learning Guide: Learn How To Wave through 4 coordinated phases. The robot will demonstrate proper form and technique by: 1. Preparation: Proper preparation ensures safe and effective practice. 2. Basic Technique: Building proper form is essential before adding speed or power. 3. Practice: Repetition builds muscle memory and confidence. 4. Application: Real-world application tests understanding and adaptability. Each movement is designed to build upon the previous phase, creating a fluid demonstration of the complete skill while maintaining safety and proper biomechanical principles.",
   "robot_control_formats": {
     "unlimited_dof": {
       "description": "Full 6DOF control per arm with 3D positioning and orientation",
@@ -125,14 +125,14 @@
             {
               "servo_id": "left_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 30.0,
-              "reasoning": "Positive y pulls left shoulder inward (30°)"
+              "position_degrees": 45.0,
+              "reasoning": "Positive y pulls left shoulder inward (45°)"
             },
             {
               "servo_id": "left_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 120.0,
-              "reasoning": "Forward x extends left elbow (120°)"
+              "position_degrees": 115.0,
+              "reasoning": "Forward x extends left elbow (115°)"
             },
             {
               "servo_id": "right_shoulder_vertical",
@@ -143,14 +143,14 @@
             {
               "servo_id": "right_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 150.0,
-              "reasoning": "Negative y pulls right shoulder inward (150°)"
+              "position_degrees": 135.0,
+              "reasoning": "Negative y pulls right shoulder inward (135°)"
             },
             {
               "servo_id": "right_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 120.0,
-              "reasoning": "Forward x extends right elbow (120°)"
+              "position_degrees": 115.0,
+              "reasoning": "Forward x extends right elbow (115°)"
             }
           ],
           "synchronous": true
@@ -169,14 +169,14 @@
             {
               "servo_id": "left_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 30.0,
-              "reasoning": "Positive y pulls left shoulder inward (30°)"
+              "position_degrees": 45.0,
+              "reasoning": "Positive y pulls left shoulder inward (45°)"
             },
             {
               "servo_id": "left_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 120.0,
-              "reasoning": "Forward x extends left elbow (120°)"
+              "position_degrees": 115.0,
+              "reasoning": "Forward x extends left elbow (115°)"
             },
             {
               "servo_id": "right_shoulder_vertical",
@@ -187,14 +187,14 @@
             {
               "servo_id": "right_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 150.0,
-              "reasoning": "Negative y pulls right shoulder inward (150°)"
+              "position_degrees": 135.0,
+              "reasoning": "Negative y pulls right shoulder inward (135°)"
             },
             {
               "servo_id": "right_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 120.0,
-              "reasoning": "Forward x extends right elbow (120°)"
+              "position_degrees": 115.0,
+              "reasoning": "Forward x extends right elbow (115°)"
             }
           ],
           "synchronous": true
@@ -213,14 +213,14 @@
             {
               "servo_id": "left_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 30.0,
-              "reasoning": "Positive y pulls left shoulder inward (30°)"
+              "position_degrees": 45.0,
+              "reasoning": "Positive y pulls left shoulder inward (45°)"
             },
             {
               "servo_id": "left_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 120.0,
-              "reasoning": "Forward x extends left elbow (120°)"
+              "position_degrees": 115.0,
+              "reasoning": "Forward x extends left elbow (115°)"
             },
             {
               "servo_id": "right_shoulder_vertical",
@@ -231,14 +231,14 @@
             {
               "servo_id": "right_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 150.0,
-              "reasoning": "Negative y pulls right shoulder inward (150°)"
+              "position_degrees": 135.0,
+              "reasoning": "Negative y pulls right shoulder inward (135°)"
             },
             {
               "servo_id": "right_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 120.0,
-              "reasoning": "Forward x extends right elbow (120°)"
+              "position_degrees": 115.0,
+              "reasoning": "Forward x extends right elbow (115°)"
             }
           ],
           "synchronous": true
@@ -257,14 +257,14 @@
             {
               "servo_id": "left_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 30.0,
-              "reasoning": "Positive y pulls left shoulder inward (30°)"
+              "position_degrees": 45.0,
+              "reasoning": "Positive y pulls left shoulder inward (45°)"
             },
             {
               "servo_id": "left_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 120.0,
-              "reasoning": "Forward x extends left elbow (120°)"
+              "position_degrees": 115.0,
+              "reasoning": "Forward x extends left elbow (115°)"
             },
             {
               "servo_id": "right_shoulder_vertical",
@@ -275,14 +275,14 @@
             {
               "servo_id": "right_shoulder_horizontal",
               "axis": "shoulder_horizontal",
-              "position_degrees": 150.0,
-              "reasoning": "Negative y pulls right shoulder inward (150°)"
+              "position_degrees": 135.0,
+              "reasoning": "Negative y pulls right shoulder inward (135°)"
             },
             {
               "servo_id": "right_elbow_vertical",
               "axis": "elbow_vertical",
-              "position_degrees": 120.0,
-              "reasoning": "Forward x extends right elbow (120°)"
+              "position_degrees": 115.0,
+              "reasoning": "Forward x extends right elbow (115°)"
             }
           ],
           "synchronous": true

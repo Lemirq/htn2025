@@ -11,5 +11,5 @@ wheels/
 
 # Environment variables and api keys
 /backend/.env
-/backend/outputs
+#/backend/outputs
 .DS_Store

@@ -1,0 +1,469 @@
+{
+  "skill": "Learning Guide: Learn How To Wave",
+  "sequence": [
+    {
+      "seq_num": 1,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 81
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 95
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 99
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 95
+        }
+      ]
+    },
+    {
+      "seq_num": 2,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 72
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 100
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 108
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 100
+        }
+      ]
+    },
+    {
+      "seq_num": 3,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 63
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 105
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 117
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 105
+        }
+      ]
+    },
+    {
+      "seq_num": 4,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 54
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 110
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 126
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 110
+        }
+      ]
+    },
+    {
+      "seq_num": 5,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 45
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 115
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 135
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 115
+        }
+      ]
+    },
+    {
+      "seq_num": 6,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 75
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 98
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 105
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 98
+        }
+      ]
+    },
+    {
+      "seq_num": 7,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 60
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 107
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 120
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 107
+        }
+      ]
+    },
+    {
+      "seq_num": 8,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 45
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 115
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 135
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 115
+        }
+      ]
+    },
+    {
+      "seq_num": 9,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 79
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 96
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 101
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 96
+        }
+      ]
+    },
+    {
+      "seq_num": 10,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 68
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 102
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 112
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 102
+        }
+      ]
+    },
+    {
+      "seq_num": 11,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 56
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 109
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 124
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 109
+        }
+      ]
+    },
+    {
+      "seq_num": 12,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 45
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 115
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 135
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 115
+        }
+      ]
+    },
+    {
+      "seq_num": 13,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 79
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 96
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 101
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 96
+        }
+      ]
+    },
+    {
+      "seq_num": 14,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 68
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 102
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 112
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 102
+        }
+      ]
+    },
+    {
+      "seq_num": 15,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 56
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 109
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 124
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 109
+        }
+      ]
+    },
+    {
+      "seq_num": 16,
+      "commands": [
+        {
+          "id": "left_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "left_shoulder_horizontal",
+          "deg": 45
+        },
+        {
+          "id": "left_elbow_vertical",
+          "deg": 115
+        },
+        {
+          "id": "right_shoulder_vertical",
+          "deg": 90
+        },
+        {
+          "id": "right_shoulder_horizontal",
+          "deg": 135
+        },
+        {
+          "id": "right_elbow_vertical",
+          "deg": 115
+        }
+      ]
+    }
+  ]
+}
