@@ -33,7 +33,7 @@ class ScrapingConfig:
 class LLMConfig:
     """Configuration for LLM processing."""
     api_key: Optional[str] = None
-    model: str = "command-a"
+    model: str = "command-r-plus"
     temperature: float = 0.2
     max_tokens: int = 4000
     timeout_seconds: int = 30
@@ -44,6 +44,10 @@ class LLMConfig:
         """Load API key from environment if not provided."""
         if not self.api_key:
             self.api_key = os.getenv("COHERE_API_KEY")
+        # Allow environment override for model id
+        env_model = os.getenv("COHERE_MODEL")
+        if env_model:
+            self.model = env_model
 
 
 @dataclass
@@ -72,6 +76,7 @@ class SystemConfig:
     enable_caching: bool = True
     cache_ttl_hours: int = 24
     robot_base_url: Optional[str] = None  # e.g., "http://192.168.1.50"
+    robot_post_mode: str = "servos"  # 'servos' posts angles per step; 'sequence' posts entire sequence once
     
     @classmethod
     def from_env(cls) -> SystemConfig:
@@ -85,6 +90,7 @@ class SystemConfig:
         config.log_level = os.getenv("LOG_LEVEL", "INFO")
         config.enable_caching = os.getenv("ENABLE_CACHING", "true").lower() == "true"
         config.robot_base_url = os.getenv("ROBOT_BASE_URL")
+        config.robot_post_mode = os.getenv("ROBOT_POST_MODE", "servos").strip().lower()
         
         return config
     

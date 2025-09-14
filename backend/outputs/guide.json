@@ -1,63 +1,134 @@
 {
-  "query": "Downward hammer / overhand  Motion: Shoulder UD high → sweep down (negative UD), Elbow semi-extended to stiffen arm.  Use: strike downward onto head/shoulder; useful if you can raise shoulder above target.",
-  "title": "Learning Guide: Downward Hammer / Overhand  Motion: Shoulder Ud High → Sweep Down (Negative Ud), Elbow Semi-Extended To Stiffen Arm.  Use: Strike Downward Onto Head/Shoulder; Useful If You Can Raise Shoulder Above Target.",
-  "domain": "general",
+  "query": "learn one inch punch",
+  "title": "How to Throw a One-Inch Punch",
+  "domain": "martial_arts",
   "prerequisites": [
-    "Clear practice area",
-    "Proper stance",
-    "Basic warm-up"
+    "basic fitness level",
+    "some martial arts experience is beneficial but not essential"
   ],
   "safety": [
-    "Start slowly",
-    "Respect joint limits",
-    "Use protective gear",
-    "Practice with supervision"
+    "Ensure adequate warm-up and stretching before attempting any punches.",
+    "Do not attempt on concrete or hard surfaces - use a padded striking surface or heavy bag.",
+    "Wear hand wraps and gloves to protect your wrists and hands.",
+    "Always practice with a partner who can provide spotting and feedback."
   ],
   "equipment": [
-    "Training mat",
-    "Protective gear (optional)"
+    "padded striking surface or heavy bag",
+    "hand wraps",
+    "boxing/martial arts gloves",
+    "optional: mouth guard"
   ],
   "core_principles": [
-    "Whole-body coordination",
-    "Proper form over speed",
-    "Progressive training"
+    "The power of the one-inch punch comes from proper body mechanics, not arm strength.",
+    "Focus on transferring your body weight and generating force from your core and legs.",
+    "Maintain a relaxed arm until the moment of impact for maximum speed and force.",
+    "Practice precise timing and distance control for effective execution."
   ],
   "steps": [
     {
-      "name": "Preparation",
-      "how": "Set up your practice area and equipment. Review safety guidelines.",
-      "why": "Proper preparation ensures safe and effective practice.",
-      "citations": [],
-      "difficulty_level": 1
+      "name": "Basic Stance and Posture",
+      "how": "Stand with your feet shoulder-width apart, toes pointed forward. Keep your knees bent and back straight, with your weight distributed evenly on both legs.",
+      "why": "This provides a stable base and helps generate power from your legs.",
+      "citations": [
+        0,
+        1,
+        2
+      ],
+      "difficulty_level": 1,
+      "cues": "Imagine you're sitting back into a chair to find the right knee bend.",
+      "common_mistakes": [
+        "locking knees",
+        "leaning too far forward or backward"
+      ]
     },
     {
-      "name": "Basic Technique",
-      "how": "Learn the fundamental movements slowly and with control.",
-      "why": "Building proper form is essential before adding speed or power.",
-      "citations": [],
-      "difficulty_level": 2
+      "name": "Arm Position and Relaxation",
+      "how": "Hold your arms up, elbows bent and relaxed, with your fists near your chest. Keep your shoulders down and relaxed, and your elbows close to your body.",
+      "why": "This position allows for a quick, snapping motion and utilizes the full range of motion in your arms.",
+      "citations": [
+        0,
+        2,
+        3
+      ],
+      "difficulty_level": 1,
+      "cues": "Focus on keeping your arms and shoulders loose and springy.",
+      "common_mistakes": [
+        "tensing arms and shoulders too early",
+        "holding fists too far away from the body"
+      ]
     },
     {
-      "name": "Practice",
-      "how": "Repeat the movements with focus on accuracy and consistency.",
-      "why": "Repetition builds muscle memory and confidence.",
-      "citations": [],
-      "difficulty_level": 3
+      "name": "Weight Shift and Rotation",
+      "how": "Shift your weight onto your back leg, then quickly shift it forward onto your front leg while rotating your hips and torso. This weight transfer and rotation adds power to the punch.",
+      "why": "This movement engages your core and larger muscle groups, generating more force.",
+      "citations": [
+        1,
+        2,
+        4
+      ],
+      "difficulty_level": 2,
+      "cues": "Think of 'sitting back' on your back leg, then exploding forward.",
+      "common_mistakes": [
+        "not shifting weight fully onto the front leg",
+        "rotating the torso too early or too late"
+      ]
     },
     {
-      "name": "Application",
-      "how": "Apply the skill in realistic scenarios or with variations.",
-      "why": "Real-world application tests understanding and adaptability.",
-      "citations": [],
-      "difficulty_level": 4
+      "name": "Snap the Punch",
+      "how": "As your weight shifts forward, snap your punching arm straight out, rotating your fist so your knuckles are facing down at impact. Keep your arm relaxed until the moment of impact, then immediately retract.",
+      "why": "Relaxing the arm increases speed, and the snapping motion adds force to the punch.",
+      "citations": [
+        2,
+        3,
+        4
+      ],
+      "difficulty_level": 3,
+      "cues": "Focus on speed and a sudden release of tension, like a whip.",
+      "common_mistakes": [
+        "tensing the arm too early",
+        "not retracting the arm quickly after impact"
+      ]
+    },
+    {
+      "name": "Distance and Timing",
+      "how": "Practice gauging the correct distance for the punch by starting with your fist one inch away from the target. Time your punch so that your arm is fully extended just as your fist makes contact.",
+      "why": "This step ensures you understand the precise timing and distance required for maximum effect.",
+      "citations": [
+        0,
+        1,
+        3
+      ],
+      "difficulty_level": 4,
+      "cues": "Visualize your arm as a coiled spring, releasing its energy at the perfect moment.",
+      "common_mistakes": [
+        "starting the punch too far away",
+        "not fully extending the arm at the right time"
+      ]
+    },
+    {
+      "name": "Combine the Elements",
+      "how": "Integrate all the previous steps into one fluid motion: stance, arm relaxation, weight shift, rotation, and snapping the punch. Practice slowly at first, then increase speed as you gain control.",
+      "why": "This step brings together all the individual components to create a powerful one-inch punch.",
+      "citations": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "difficulty_level": 5,
+      "cues": "Focus on smoothness and precision. Ensure each element flows into the next without hesitation.",
+      "common_mistakes": [
+        "rushing the movement",
+        "forgetting to relax the arm until impact"
+      ]
     }
   ],
   "evaluation": [
-    "Maintain balance",
-    "Execute with control",
-    "Demonstrate understanding"
+    "You should feel a 'whip-like' sensation and sense of power coming from your core and legs, not just your arms.",
+    "You can deliver a powerful punch from a very short distance, demonstrating control and precision."
   ],
   "sources": [],
-  "estimated_learning_time": "2-4 weeks with regular practice",
-  "difficulty_rating": 3
+  "estimated_learning_time": "3-4 weeks of consistent practice (3-4 times per week) for basic proficiency",
+  "difficulty_rating": 4
 }
