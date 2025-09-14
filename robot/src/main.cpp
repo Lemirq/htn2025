@@ -13,9 +13,41 @@ const int LED_PIN = 2;
 
 // Servo configuration
 static const int SERVO_COUNT = 6; // 0-2 left arm, 3-5 right arm
-int SERVO_PINS[SERVO_COUNT] = {13, 14, 12, 17, 18, 19};
+int SERVO_PINS[SERVO_COUNT] = {13, 14, 12, 27, 26, 25};
 Servo servos[SERVO_COUNT];
 int currentAngles[SERVO_COUNT];
+
+// Servo ID mapping for numeric commands (1-6 instead of names)
+struct ServoMapping {
+  int id;        // Numeric ID (1-6)
+  int index;     // Array index (0-5)
+  const char* name; // Description for debugging
+};
+
+static const ServoMapping SERVO_MAP[] = {
+  {1,0,"left_shoulder_vertical"},
+  {2,1,"left_shoulder_horizontal"},
+  {3,2,"left_elbow_vertical"},
+  {4,3,"right_shoulder_vertical"},
+  {5,4,"right_shoulder_horizontal"},
+  {6,5,"right_elbow_vertical"}
+};
+static const int SERVO_MAP_SIZE = sizeof(SERVO_MAP)/sizeof(ServoMapping);
+
+// Function to get servo index from numeric ID (1-6)
+int getServoIndex(int numericId) {
+  for(int i=0;i<SERVO_MAP_SIZE;++i) {
+    if(SERVO_MAP[i].id==numericId) return SERVO_MAP[i].index;
+  }
+  return -1;
+}
+
+const char* getServoName(int numericId) {
+  for(int i=0;i<SERVO_MAP_SIZE;++i) {
+    if(SERVO_MAP[i].id==numericId) return SERVO_MAP[i].name;
+  }
+  return "unknown";
+}
 
 // Pulse range typical for SG90/MG90 etc.
 const int SERVO_MIN_US = 500;  // microseconds
@@ -38,10 +70,15 @@ void handleRoot() {
   StaticJsonDocument<256> doc;
   doc["status"] = "ok";
   JsonArray pins = doc.createNestedArray("pins");
-  for (int i = 0; i < SERVO_COUNT; ++i) pins.add(SERVO_PINS[i]);
+  for (int i = 0; i < SERVO_COUNT; ++i) {
+    pins.add(SERVO_PINS[i]);
+  }
   JsonArray angles = doc.createNestedArray("angles");
-  for (int i = 0; i < SERVO_COUNT; ++i) angles.add(currentAngles[i]);
+  for (int i = 0; i < SERVO_COUNT; ++i) {
+    angles.add(currentAngles[i]);
+  }
   doc["mapping"] = "indices 0-2 left arm joints, 3-5 right arm joints";
+  doc["free_heap"] = ESP.getFreeHeap();
   Serial.println("✅ Status response sent");
   sendJson(doc);
 }
@@ -55,55 +92,147 @@ bool parseJsonBody(StaticJsonDocument<512> &doc) {
   return false;
 }
 
+void handleSequence() {
+  Serial.print("📡 POST /sequence - Sequence request received from ");
+  Serial.println(server.client().remoteIP());
+
+  unsigned long heapBefore = ESP.getFreeHeap();
+
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"error\":\"Missing body\"}");
+    return;
+  }
+
+  String body = server.arg("plain");
+  size_t bodyLen = body.length();
+  Serial.print("📥 Received JSON body length: ");
+  Serial.println(bodyLen);
+
+  // Parse JSON in memory
+  Serial.println("🧠 Parsing sequence in memory");
+  size_t cap = 2048 + bodyLen; // Generous allocation for ESP32 WROVER
+  DynamicJsonDocument *docPtr = new (std::nothrow) DynamicJsonDocument(cap);
+  if (!docPtr) {
+    server.send(500, "application/json", "{\"error\":\"Memory allocation failure\"}");
+    return;
+  }
+
+  DeserializationError jerr = deserializeJson(*docPtr, body);
+  if (jerr) {
+    Serial.print("❌ JSON deserialization error: ");
+    Serial.println(jerr.c_str());
+    delete docPtr;
+    server.send(400, "application/json", "{\"error\":\"JSON parse failed\"}");
+    return;
+  }
+
+  JsonDocument &doc = *docPtr;
+
+  if (!doc.containsKey("sequence")) {
+    delete docPtr;
+    server.send(400, "application/json", "{\"error\":\"Missing sequence field\"}");
+    return;
+  }
+
+  JsonArray sequence = doc["sequence"].as<JsonArray>();
+  String skill = doc.containsKey("skill") ? doc["skill"].as<String>() : String("Unknown Skill");
+
+  Serial.print("🎭 Skill: ");
+  Serial.println(skill);
+  Serial.print("🧾 Steps: ");
+  Serial.println(sequence.size());
+
+  // Execute steps
+  for (JsonObject step : sequence) {
+    if (!step.containsKey("commands")) {
+      delete docPtr;
+      server.send(400, "application/json", "{\"error\":\"Step missing commands\"}");
+      return;
+    }
+    JsonArray commands = step["commands"].as<JsonArray>();
+    Serial.print("🔢 Step ");
+    Serial.print(step["seq_num"].as<int>());
+    Serial.print(" cmds=");
+    Serial.println(commands.size());
+
+    for (JsonObject c : commands) {
+      if (!c.containsKey("id") || !c.containsKey("deg")) {
+        delete docPtr;
+        server.send(400, "application/json", "{\"error\":\"Command missing id/deg\"}");
+        return;
+      }
+      int sid = c["id"].as<int>();
+      int angle = c["deg"].as<int>();
+      int idx = getServoIndex(sid);
+      if (idx < 0) {
+        delete docPtr;
+        server.send(400,"application/json","{\"error\":\"Bad servo id\"}");
+        return;
+      }
+      if (angle < 0 || angle > 180) {
+        delete docPtr;
+        server.send(400,"application/json","{\"error\":\"Angle out of range\"}");
+        return;
+      }
+      servos[idx].write(angle);
+      currentAngles[idx]=angle;
+      Serial.print("  ✅ Servo ");
+      Serial.print(sid);
+      Serial.print(" -> ");
+      Serial.print(angle);
+      Serial.println("°");
+    }
+    delay(400);
+  }
+
+  unsigned long heapAfter = ESP.getFreeHeap();
+
+  // Build response
+  DynamicJsonDocument resp(512 + SERVO_COUNT * 8);
+  resp["status"] = "completed";
+  resp["skill"] = skill;
+  resp["steps_executed"] = sequence.size();
+  resp["heap_before"] = heapBefore;
+  resp["heap_after"] = heapAfter;
+  resp["body_size"] = bodyLen;
+  resp["memory_used"] = heapBefore - heapAfter;
+  JsonArray finalAngles = resp.createNestedArray("final_angles");
+  for (int i=0;i<SERVO_COUNT;++i) {
+    finalAngles.add(currentAngles[i]);
+  }
+
+  sendJson(resp);
+  delete docPtr; // Free memory
+}
+
 void handleSetSingle() {
   Serial.print("📡 POST /servo - Single servo request received from ");
   Serial.println(server.client().remoteIP());
-
   StaticJsonDocument<512> doc;
-  if (!parseJsonBody(doc)) {
-    Serial.println("❌ Invalid JSON in request");
-    server.send(400, "application/json", "{\"error\":\"Invalid JSON\"}");
+  if(!parseJsonBody(doc) || !doc.containsKey("id") || !doc.containsKey("angle")) {
+    server.send(400,"application/json","{\"error\":\"Bad request\"}");
     return;
   }
-  if (!doc.containsKey("id") || !doc.containsKey("angle")) {
-    Serial.println("❌ Missing id or angle in request");
-    server.send(400, "application/json", "{\"error\":\"Missing id or angle\"}");
-    return;
-  }
-
   int id = doc["id"].as<int>();
   int angle = doc["angle"].as<int>();
-
-  Serial.print("🎯 Request: Servo ");
-  Serial.print(id);
-  Serial.print(" -> ");
-  Serial.print(angle);
-  Serial.println("°");
-
-  if (id < 0 || id >= SERVO_COUNT) {
-    Serial.print("❌ Invalid servo ID: ");
-    Serial.println(id);
-    server.send(400, "application/json", "{\"error\":\"Invalid servo id\"}");
+  if(id < 1 || id > SERVO_COUNT) {
+    server.send(400,"application/json","{\"error\":\"Invalid servo id (1-6)\"}");
     return;
   }
-  if (angle < 0 || angle > 180) {
-    Serial.print("❌ Invalid angle: ");
-    Serial.println(angle);
-    server.send(400, "application/json", "{\"error\":\"Angle out of range 0-180\"}");
+  if(angle < 0 || angle > 180) {
+    server.send(400,"application/json","{\"error\":\"Angle out of range 0-180\"}");
     return;
   }
-
-  servos[id].write(angle);
-  currentAngles[id] = angle;
-
-  Serial.print("✅ Servo ");
-  Serial.print(id);
-  Serial.print(" moved to ");
-  Serial.print(angle);
-  Serial.println("°");
-
+  int idx = getServoIndex(id);
+  if(idx < 0) {
+    server.send(400,"application/json","{\"error\":\"Mapping failure\"}");
+    return;
+  }
+  servos[idx].write(angle);
+  currentAngles[idx] = angle;
   StaticJsonDocument<128> res;
   res["id"] = id;
+  res["name"] = getServoName(id);
   res["angle"] = angle;
   sendJson(res);
 }
@@ -111,71 +240,60 @@ void handleSetSingle() {
 void handleSetBatch() {
   Serial.print("📡 POST /servos - Batch servo request received from ");
   Serial.println(server.client().remoteIP());
-
   StaticJsonDocument<512> doc;
-  if (!parseJsonBody(doc)) {
-    Serial.println("❌ Invalid JSON in batch request");
-    server.send(400, "application/json", "{\"error\":\"Invalid JSON\"}");
+  if(!parseJsonBody(doc) || !doc.containsKey("angles")) {
+    server.send(400,"application/json","{\"error\":\"Bad request\"}");
     return;
   }
-  if (!doc.containsKey("angles")) {
-    Serial.println("❌ Missing angles array in batch request");
-    server.send(400, "application/json", "{\"error\":\"Missing angles array\"}");
-    return;
-  }
-
   JsonArray arr = doc["angles"].as<JsonArray>();
-  if (arr.size() != SERVO_COUNT) {
-    Serial.print("❌ Invalid angles array size: ");
-    Serial.print(arr.size());
-    Serial.print(" (expected ");
-    Serial.print(SERVO_COUNT);
-    Serial.println(")");
-    server.send(400, "application/json", "{\"error\":\"angles array must have 6 values\"}");
+  if(arr.size() != SERVO_COUNT) {
+    server.send(400,"application/json","{\"error\":\"Need 6 angles (index 1..6)\"}");
     return;
   }
-
-  // Validate all angles first
-  Serial.print("🎯 Batch request angles: [");
-  for (int i = 0; i < SERVO_COUNT; ++i) {
+  for(int i=0;i<SERVO_COUNT;++i) {
     int a = arr[i].as<int>();
-    if (i > 0) Serial.print(", ");
-    Serial.print(a);
-    if (a < 0 || a > 180) {
-      Serial.println("]");
-      Serial.print("❌ Invalid angle at index ");
-      Serial.print(i);
-      Serial.print(": ");
-      Serial.println(a);
-      server.send(400, "application/json", "{\"error\":\"All angles must be 0-180\"}");
+    if(a<0||a>180){
+      server.send(400,"application/json","{\"error\":\"Angle out of range\"}");
       return;
     }
   }
-  Serial.println("]");
-
-  // Apply all angles
-  Serial.println("🔄 Applying angles to servos...");
-  for (int i = 0; i < SERVO_COUNT; ++i) {
+  for(int i=0;i<SERVO_COUNT;++i) {
     int a = arr[i].as<int>();
     servos[i].write(a);
-    currentAngles[i] = a;
-    Serial.print("  Servo ");
-    Serial.print(i);
-    Serial.print(" -> ");
-    Serial.print(a);
-    Serial.println("°");
+    currentAngles[i]=a;
   }
-
-  Serial.println("✅ All servos moved successfully!");
-
   StaticJsonDocument<256> res;
-  JsonArray angles = res.createNestedArray("angles");
-  for (int i = 0; i < SERVO_COUNT; ++i) angles.add(currentAngles[i]);
+  JsonArray out=res.createNestedArray("angles");
+  for(int i=0;i<SERVO_COUNT;++i) {
+    out.add(currentAngles[i]);
+  }
   sendJson(res);
 }
 
 void handleNotFound() {
   server.send(404, "application/json", "{\"error\":\"Not found\"}");
+}
+
+void handleCalibrate() {
+  Serial.println("🛠 POST /calibrate - neutralizing servos then restarting");
+  for(int i=0;i<SERVO_COUNT;++i){
+    servos[i].write(90);
+    currentAngles[i]=90;
+  }
+  StaticJsonDocument<256> doc;
+  doc["status"]="restarting";
+  doc["action"]="calibrate";
+  doc["neutral_angle"]=90;
+  JsonArray arr=doc.createNestedArray("angles");
+  for(int i=0;i<SERVO_COUNT;++i) {
+    arr.add(currentAngles[i]);
+  }
+  doc["restart_in_ms"]=500;
+  doc["timestamp_ms"]=millis();
+  sendJson(doc);
+  Serial.println("🔄 Rebooting in 500ms...");
+  delay(500);
+  ESP.restart();
 }
 
 void setupWiFi() {
@@ -186,7 +304,6 @@ void setupWiFi() {
   Serial.print("Connecting to WiFi network: ");
   Serial.println(WIFI_SSID);
 
-  // First try DHCP to get on the network
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   Serial.print("Connecting with DHCP");
 
@@ -252,7 +369,6 @@ void setupServos() {
   Serial.println("=== Servo Setup Starting ===");
   Serial.println("Allocating PWM timers...");
 
-  // Allow allocation of all timers
   ESP32PWM::allocateTimer(0);
   ESP32PWM::allocateTimer(1);
   ESP32PWM::allocateTimer(2);
@@ -270,17 +386,17 @@ void setupServos() {
     Serial.print(SERVO_PINS[i]);
     Serial.print("...");
 
-    servos[i].setPeriodHertz(50); // Standard 50Hz
+    servos[i].setPeriodHertz(50);
     servos[i].attach(SERVO_PINS[i], SERVO_MIN_US, SERVO_MAX_US);
-    currentAngles[i] = 90; // neutral start
+    currentAngles[i] = 90;
     servos[i].write(currentAngles[i]);
 
     Serial.print(" ✅ Initialized at ");
     Serial.print(currentAngles[i]);
     Serial.println("°");
-    delay(100); // Small delay between servo inits
+    delay(100);
   }
-  Serial.println("��� All servos initialized successfully!");
+  Serial.println("✅ All servos initialized successfully!");
   Serial.println("=== Servo Setup Complete ===");
 }
 
@@ -288,14 +404,11 @@ void setupServer() {
   Serial.println("=== HTTP Server Setup Starting ===");
   Serial.println("Registering HTTP endpoints...");
   server.on("/", HTTP_GET, handleRoot);
-  Serial.println("  ✅ GET / (status endpoint)");
   server.on("/servo", HTTP_POST, handleSetSingle);
-  Serial.println("  ✅ POST /servo (single servo control)");
   server.on("/servos", HTTP_POST, handleSetBatch);
-  Serial.println("  ✅ POST /servos (batch servo control)");
+  server.on("/sequence", HTTP_POST, handleSequence);
+  server.on("/calibrate", HTTP_POST, handleCalibrate);
   server.onNotFound(handleNotFound);
-  Serial.println("  ✅ 404 handler registered");
-
   server.begin();
   Serial.println("🎉 HTTP server started successfully on port 80!");
   Serial.println("=== HTTP Server Setup Complete ===");
@@ -303,22 +416,22 @@ void setupServer() {
 
 void setup() {
   Serial.begin(115200);
-  delay(2000); // Give serial time to initialize
+  delay(1200);
+  Serial.println("\n=== ESP32 SERVO CONTROLLER BOOT ===");
 
-  // Startup countdown to allow time to open serial monitor
-  Serial.println("\n\n╔═════════════════════════════════════════��════════╗");
-  Serial.println("║          ESP32 SERVO CONTROLLER STARTING        ║");
-  Serial.println("╚══════════════════════════════════════════════════╝");
-  Serial.println("⏰ Starting in 5 seconds... Open serial monitor now!");
+  Serial.println("\n\n============================================================");
+  Serial.println("          ESP32 SERVO CONTROLLER STARTING        ");
+  Serial.println("============================================================");
+  Serial.println("Starting in 2 seconds... Open serial monitor now!");
 
-  for (int i = 5; i > 0; i--) {
+  for (int i = 2; i > 0; i--) {
     Serial.print("Starting in: ");
     Serial.print(i);
     Serial.println(" seconds...");
     delay(1000);
   }
 
-  Serial.println("\n🚀 INITIALIZING ESP32 SERVO CONTROLLER...\n");
+  Serial.println("\nINITIALIZING ESP32 SERVO CONTROLLER...\n");
 
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
@@ -326,22 +439,35 @@ void setup() {
   setupServos();
   setupServer();
 
-  Serial.println("\n╔══════════════════════════════════════════════════╗");
-  Serial.println("║              SYSTEM READY!                      ║");
-  Serial.println("╚══════════════════════════════════════════════════╝");
-  Serial.println("🎉 ESP32 Servo Controller is now operational!");
-  Serial.println("📡 Listening for HTTP requests...");
-  Serial.println("\n📖 USAGE EXAMPLES:");
-  Serial.println("Example single: curl -X POST http://" + WiFi.localIP().toString() + "/servo -H 'Content-Type: application/json' -d '{\"id\":0,\"angle\":120}'");
-  Serial.println("Example batch: curl -X POST http://" + WiFi.localIP().toString() + "/servos -H 'Content-Type: application/json' -d '{\"angles\":[90,45,120,60,30,150]}'");
-  Serial.println("\n💡 Watch this monitor for real-time servo commands and debug info!");
+  Serial.println("\n============================================================");
+  Serial.println("              SYSTEM READY!                      ");
+  Serial.println("============================================================");
+  Serial.println("ESP32 Servo Controller is now operational!");
+  Serial.println("Listening for HTTP requests...");
+  Serial.print("Free heap memory: ");
+  Serial.print(ESP.getFreeHeap());
+  Serial.println(" bytes");
+  Serial.println("\nUSAGE EXAMPLES:");
+  Serial.print("Example single: curl -X POST http://");
+  Serial.print(WiFi.localIP().toString());
+  Serial.println("/servo -H 'Content-Type: application/json' -d '{\"id\":1,\"angle\":120}'");
+  Serial.print("Example batch: curl -X POST http://");
+  Serial.print(WiFi.localIP().toString());
+  Serial.println("/servos -H 'Content-Type: application/json' -d '{\"angles\":[90,45,120,60,30,150]}'");
+  Serial.print("Example sequence: curl -X POST http://");
+  Serial.print(WiFi.localIP().toString());
+  Serial.println("/sequence -H 'Content-Type: application/json' -d '{\"skill\":\"wave\",\"sequence\":[{\"seq_num\":1,\"commands\":[{\"id\":2,\"deg\":45}]}]}'");
+  Serial.print("Calibrate (neutral + restart): curl -X POST http://");
+  Serial.print(WiFi.localIP().toString());
+  Serial.println("/calibrate");
+  Serial.println("\nWatch this monitor for real-time servo commands and debug info!");
   Serial.println("============================================================");
 }
 
 void loop() {
   server.handleClient();
   unsigned long now = millis();
-  if (now - lastBlink >= 1000) { // heartbeat every second
+  if (now - lastBlink >= 1000) {
     ledState = !ledState;
     digitalWrite(LED_PIN, ledState ? HIGH : LOW);
     lastBlink = now;
