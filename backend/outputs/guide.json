@@ -1,22 +1,15 @@
 {
-  "query": "do an uppercut",
-  "title": "Learning Guide: Do An Uppercut",
+  "query": "Learn how to wave",
+  "title": "Learning Guide: Learn How To Wave",
   "domain": "general",
-  "prerequisites": [
-    "Clear practice area",
-    "Proper stance",
-    "Basic warm-up"
-  ],
+  "prerequisites": ["Clear practice area", "Proper stance", "Basic warm-up"],
   "safety": [
     "Start slowly",
     "Respect joint limits",
     "Use protective gear",
     "Practice with supervision"
   ],
-  "equipment": [
-    "Training mat",
-    "Protective gear (optional)"
-  ],
+  "equipment": ["Training mat", "Protective gear (optional)"],
   "core_principles": [
     "Whole-body coordination",
     "Proper form over speed",

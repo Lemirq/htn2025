@@ -149,6 +149,17 @@ class RobotControlGenerator:
     def __init__(self, llm_config: Optional[LLMConfig] = None):
         # Initialize Cohere servo planner (falls back to heuristics if not available)
         self.servo_planner = CohereServoPlanner(llm_config or LLMConfig())
+        # Integer ID mapping for compact actuator commands
+        # 1:left_shoulder_vertical, 2:left_shoulder_horizontal, 3:left_elbow_vertical,
+        # 4:right_shoulder_vertical, 5:right_shoulder_horizontal, 6:right_elbow_vertical
+        self.SERVO_ID_MAP: Dict[str, int] = {
+            "left_shoulder_vertical": 1,
+            "left_shoulder_horizontal": 2,
+            "left_elbow_vertical": 3,
+            "right_shoulder_vertical": 4,
+            "right_shoulder_horizontal": 5,
+            "right_elbow_vertical": 6,
+        }
     
     def generate_robot_instructions(self, execution_plan: ExecutionPlan) -> RobotControlInstructions:
         """Generate complete robot control instructions from execution plan."""
@@ -214,28 +225,74 @@ class RobotControlGenerator:
         No textual descriptions or reasoning. Strictly ordered steps only.
         """
         sequence: List[Dict[str, Any]] = []
-        for idx, phase in enumerate(plan.phases, start=1):
+        # Determine max allowed change per step per joint (degrees)
+        # Map max_velocity_hint ∈ (0,1] to a delta between 10° and 45°
+        mv = getattr(plan.constraints, "max_velocity_hint", 0.8) or 0.8
+        max_delta = int(10 + (max(0.0, min(1.0, mv)) * 35))
+
+        # Maintain last angles to smooth transitions; start from neutral
+        last_angles: Dict[str, int] = {
+            "left_shoulder_vertical": 90,
+            "left_shoulder_horizontal": 90,
+            "left_elbow_vertical": 90,
+            "right_shoulder_vertical": 90,
+            "right_shoulder_horizontal": 90,
+            "right_elbow_vertical": 90,
+        }
+
+        def clamp_int(v: float) -> int:
+            try:
+                iv = int(round(float(v)))
+            except Exception:
+                iv = 90
+            return max(0, min(180, iv))
+
+        def smooth(target: int, prev: int) -> int:
+            # Limit per-step change to +/- max_delta
+            if target > prev + max_delta:
+                return prev + max_delta
+            if target < prev - max_delta:
+                return prev - max_delta
+            return target
+
+        seq_counter = 1
+        for phase in plan.phases:
             left_target, right_target = self._calculate_3d_targets(phase)
-            plan_data = self.servo_planner.plan_servo_positions(
+            # Ask for multi-waypoint trajectory to enable richer sequences
+            waypoints = self.servo_planner.plan_servo_trajectory(
                 skill_name=plan.skill_name,
                 phase=phase,
                 constraints=plan.constraints,
                 left_target=left_target,
                 right_target=right_target,
             )
-            la = plan_data.get("left_arm", {})
-            ra = plan_data.get("right_arm", {})
 
-            # Build minimal command list in a fixed order to ensure determinism
-            commands = [
-                {"id": "left_shoulder_vertical", "deg": int(round(float(la.get("shoulder_vertical", 90))))},
-                {"id": "left_shoulder_horizontal", "deg": int(round(float(la.get("shoulder_horizontal", 90))))},
-                {"id": "left_elbow_vertical", "deg": int(round(float(la.get("elbow_vertical", 90))))},
-                {"id": "right_shoulder_vertical", "deg": int(round(float(ra.get("shoulder_vertical", 90))))},
-                {"id": "right_shoulder_horizontal", "deg": int(round(float(ra.get("shoulder_horizontal", 90))))},
-                {"id": "right_elbow_vertical", "deg": int(round(float(ra.get("elbow_vertical", 90))))},
-            ]
-            sequence.append({"seq_num": idx, "commands": commands})
+            for wp in waypoints:
+                la = wp.get("left_arm", {})
+                ra = wp.get("right_arm", {})
+
+                raw = {
+                    "left_shoulder_vertical": clamp_int(la.get("shoulder_vertical", 90)),
+                    "left_shoulder_horizontal": clamp_int(la.get("shoulder_horizontal", 90)),
+                    "left_elbow_vertical": clamp_int(la.get("elbow_vertical", 90)),
+                    "right_shoulder_vertical": clamp_int(ra.get("shoulder_vertical", 90)),
+                    "right_shoulder_horizontal": clamp_int(ra.get("shoulder_horizontal", 90)),
+                    "right_elbow_vertical": clamp_int(ra.get("elbow_vertical", 90)),
+                }
+
+                smoothed = {k: smooth(v, last_angles[k]) for k, v in raw.items()}
+                last_angles.update(smoothed)
+
+                commands = [
+                    {"id": self.SERVO_ID_MAP["left_shoulder_vertical"], "deg": smoothed["left_shoulder_vertical"]},
+                    {"id": self.SERVO_ID_MAP["left_shoulder_horizontal"], "deg": smoothed["left_shoulder_horizontal"]},
+                    {"id": self.SERVO_ID_MAP["left_elbow_vertical"], "deg": smoothed["left_elbow_vertical"]},
+                    {"id": self.SERVO_ID_MAP["right_shoulder_vertical"], "deg": smoothed["right_shoulder_vertical"]},
+                    {"id": self.SERVO_ID_MAP["right_shoulder_horizontal"], "deg": smoothed["right_shoulder_horizontal"]},
+                    {"id": self.SERVO_ID_MAP["right_elbow_vertical"], "deg": smoothed["right_elbow_vertical"]},
+                ]
+                sequence.append({"seq_num": seq_counter, "commands": commands})
+                seq_counter += 1
 
         return {"skill": plan.skill_name, "sequence": sequence}
     

@@ -74,6 +74,8 @@ class GuideValidator:
         
         return data
 
+    
+
 
 class FallbackGuideGenerator:
     """Generates deterministic fallback guides when LLM is unavailable."""
@@ -303,17 +305,18 @@ class CohereServoPlanner:
 
     def _build_system_prompt(self) -> str:
         return (
-            "You are a robotics kinematics planner for a humanoid upper body with 3 DOF per arm. "
-            "Your task is to reduce a movement phase description (and optional 3D targets) to explicit servo angles.\n\n"
-            "Hardware model per arm: shoulder_vertical (up/down), shoulder_horizontal (left/right), elbow_vertical (up/down).\n"
-            "Servo angle range: 0-180 degrees. Use neutral at ~90°.\n"
-            "Constraints: obey provided joint limits; keep COM in base if requested; respect workspace hints.\n"
-            "Kinematic reasoning rules:\n"
-            "- Select a primary (active) arm when the task implies a single-handed action (e.g., a punch).\n"
-            "- Keep the non-active arm in a protective guard posture (inward shoulder horizontal, moderate shoulder vertical, elbow flexed).\n"
-            "- Avoid symmetric simultaneous strikes with both arms unless explicitly required by the description.\n"
-            "- Ensure angles are biomechanically plausible and within [0,180].\n\n"
-            "Output ONLY valid JSON with this exact schema:\n"
+            "You are a robotics kinematics planner for a humanoid UPPER-BODY only with 3 DOF per arm. "
+            "Your job: convert each movement phase (plus optional 3D targets and constraints) into EXPLICIT servo angles suitable for direct actuator control.\n\n"
+            "Hardware per arm: shoulder_vertical (up/down), shoulder_horizontal (left/right), elbow_vertical (up/down).\n"
+            "Angle domain: integers in [0, 180]. Neutral posture is ~90°. Do NOT output any floats.\n"
+            "Safety & constraints: obey provided joint limits, keep COM in base if requested, respect workspace hints, and prefer guard posture for the non-active arm.\n"
+            "Planning rules:\n"
+            "- If the phase implies a single-handed action, infer an ACTIVE ARM and keep the other arm in protective guard (shoulder_horizontal inward, shoulder_vertical moderate, elbow flexed).\n"
+            "- Use 3D targets as directional hints (z -> shoulder_vertical, y -> shoulder_horizontal, x -> elbow extension).\n"
+            "- Map velocity/force profiles to posture intent (explosive -> more extension on active arm; slow/controlled -> conservative angles).\n"
+            "- Ensure biomechanical plausibility and keep all angles within [0,180].\n"
+            "- UPPER BODY ARMS ONLY. No legs or torso outputs.\n\n"
+            "Output ONLY valid JSON with this exact schema and keys (integers only):\n"
             "{\n"
             "  \"left_arm\": {\n"
             "    \"shoulder_vertical\": 0-180,\n"
@@ -346,16 +349,31 @@ class CohereServoPlanner:
         left_target: dict,
         right_target: dict,
     ) -> str:
+        # Lightweight role inference hints from phase naming/cues
+        name = (phase.name or "").lower()
+        cue = (phase.cue or "").lower()
+        role_hint = "unknown"
+        if any(k in name or k in cue for k in ["left", "jab (left)"]):
+            role_hint = "left_active"
+        elif any(k in name or k in cue for k in ["right", "cross", "jab (right)"]):
+            role_hint = "right_active"
+        elif any(k in name or k in cue for k in ["uppercut", "hook", "punch"]):
+            # default to right-dominant for generic strikes unless specified
+            role_hint = "right_active"
+
         return (
             f"SKILL: {skill_name}\n"
             f"PHASE: {phase.name}\n"
             f"CUE: {phase.cue}\n"
             f"RATIONALE: {phase.rationale}\n"
             f"POSE_HINTS: {phase.pose_hints}\n"
+            f"VELOCITY_PROFILE: {phase.velocity_profile}\n"
+            f"FORCE_PROFILE: {phase.force_profile}\n"
+            f"ROLE_HINT: {role_hint}  # if unknown, infer from context\n"
             f"CONSTRAINTS: {constraints.to_dict()}\n"
             f"LEFT_3D_TARGET: {left_target}\n"
             f"RIGHT_3D_TARGET: {right_target}\n"
-            "Reduce to 3 DOF servo angles per arm with 0-180° values and provide concise reasoning per servo and overall."
+            "Reduce to 3 DOF servo angles per arm with integer 0-180° values. Provide concise reasoning per servo and overall."
         )
 
     def _clamp(self, v: float) -> int:
@@ -389,8 +407,29 @@ class CohereServoPlanner:
         left_target: dict,
         right_target: dict,
     ) -> dict:
-        """Deterministic heuristic mapping from 3D targets to 3DOF servo angles."""
-        def map_arm(tgt: dict, side: str) -> dict:
+        """Deterministic heuristic mapping from 3D targets to 3DOF servo angles with role and profile awareness."""
+        # Infer active arm
+        name = (phase.name or "").lower()
+        cue = (phase.cue or "").lower()
+        right_active = False
+        left_active = False
+        if any(k in name or k in cue for k in ["left", "jab (left)"]):
+            left_active = True
+        elif any(k in name or k in cue for k in ["right", "cross", "jab (right)"]):
+            right_active = True
+        elif any(k in name or k in cue for k in ["uppercut", "hook", "punch"]):
+            right_active = True
+
+        # Velocity/force scaling
+        vel = (phase.velocity_profile or "medium").lower()
+        force = (phase.force_profile or "controlled").lower()
+        power_scale = 1.0
+        if vel in ["explosive", "fast"] or force in ["maximum"]:
+            power_scale = 1.2
+        elif vel in ["slow"] and force in ["minimal"]:
+            power_scale = 0.9
+
+        def map_arm(tgt: dict, side: str, active: bool) -> dict:
             # Start neutral
             shoulder_v = 90
             shoulder_h = 90
@@ -402,16 +441,26 @@ class CohereServoPlanner:
             x = tgt.get("x", 0.3)
 
             # Shoulder vertical: up if higher z
-            shoulder_v = self._clamp(90 + (z - 1.2) * 200)  # ~0.2m -> +40°
+            shoulder_v = self._clamp(90 + (z - 1.2) * 200 * (1.1 if active else 0.9))
 
             # Shoulder horizontal: inward/outward based on lateral offset (mirror right side)
             if side == "left":
-                shoulder_h = self._clamp(90 - y * 300)  # y>0 -> inward (smaller angle)
+                shoulder_h = self._clamp(90 - y * 300)
             else:
-                shoulder_h = self._clamp(90 + (-y) * 300)  # y<0 -> inward (larger angle)
+                shoulder_h = self._clamp(90 + (-y) * 300)
 
             # Elbow vertical: more forward x -> more extension (smaller angle), keep within 30-150
-            elbow_v = self._clamp(120 - (x - 0.3) * 300)
+            elbow_v = self._clamp(120 - (x - 0.3) * 300 * (1.2 if active else 0.8))
+
+            # Apply power scaling for active arm only
+            if active:
+                # Move shoulder_v slightly higher and elbow more extended for strikes
+                shoulder_v = self._clamp(shoulder_v * power_scale)
+                elbow_v = self._clamp(elbow_v - int(round((power_scale - 1.0) * 10)))
+            else:
+                # Guard posture for non-active arm
+                shoulder_h = self._clamp((shoulder_h + (60 if side == "left" else 120)) // 2)
+                elbow_v = self._clamp((elbow_v + 110) // 2)
 
             return {
                 "shoulder_vertical": shoulder_v,
@@ -419,8 +468,8 @@ class CohereServoPlanner:
                 "elbow_vertical": elbow_v,
             }
 
-        left = map_arm(left_target, "left")
-        right = map_arm(right_target, "right")
+        left = map_arm(left_target, "left", left_active and not right_active)
+        right = map_arm(right_target, "right", right_active and not left_active)
 
         reasoning = {
             "movement": (
@@ -441,6 +490,35 @@ class CohereServoPlanner:
             "reasoning": reasoning,
         }
 
+    def _fallback_trajectory(
+        self,
+        phase: ExecutionPhase,
+        left_target: dict,
+        right_target: dict,
+    ) -> list:
+        """Heuristic multi-waypoint trajectory from neutral to phase target."""
+        single = self._fallback_plan(phase, left_target, right_target)
+        la_t = single["left_arm"]
+        ra_t = single["right_arm"]
+        # Determine number of waypoints by duration and velocity profile
+        dur = getattr(phase, "duration_ms", 500) or 500
+        vel = (phase.velocity_profile or "medium").lower()
+        n = max(3, min(7, int(round(dur / 200))))
+        if vel in ["explosive"]:
+            n = max(3, min(n, 4))
+        elif vel in ["slow"]:
+            n = min(7, max(n, 5))
+        def interp(a0: int, a1: int, t: float) -> int:
+            return self._clamp(int(round(a0 + (a1 - a0) * t)))
+        neutral = {"shoulder_vertical": 90, "shoulder_horizontal": 90, "elbow_vertical": 90}
+        waypoints = []
+        for i in range(1, n + 1):
+            t = i / n
+            la = {k: interp(neutral[k], la_t[k], t) for k in neutral}
+            ra = {k: interp(neutral[k], ra_t[k], t) for k in neutral}
+            waypoints.append({"left_arm": la, "right_arm": ra})
+        return waypoints
+
     def plan_servo_positions(
         self,
         skill_name: str,
@@ -457,12 +535,13 @@ class CohereServoPlanner:
         user_prompt = self._build_user_prompt(skill_name, phase, constraints, left_target, right_target)
 
         try:
+            # Use deterministic settings for actuator commands
             response = self.client.chat(
                 model=self.config.model,
                 message=user_prompt,
                 preamble=system_prompt,
-                temperature=self.config.temperature,
-                max_tokens=min(self.config.max_tokens, 800),
+                temperature=min(getattr(self.config, "temperature", 0.2), 0.1),
+                max_tokens=min(getattr(self.config, "max_tokens", 4000), 600),
             )
 
             text = response.text.strip()
@@ -476,4 +555,39 @@ class CohereServoPlanner:
         except Exception as e:
             logger.warning(f"Cohere servo planning failed, using fallback: {e}")
             return self._fallback_plan(phase, left_target, right_target)
+
+    def plan_servo_trajectory(
+        self,
+        skill_name: str,
+        phase: ExecutionPhase,
+        constraints: PhysicalConstraints,
+        left_target: dict,
+        right_target: dict,
+    ) -> list:
+        """Ask Cohere for multiple waypoints; fallback to heuristic interpolation."""
+        if not self.client:
+            return self._fallback_trajectory(phase, left_target, right_target)
+
+        system_prompt = self._build_system_prompt_trajectory()
+        user_prompt = self._build_user_prompt_trajectory(skill_name, phase, constraints, left_target, right_target)
+
+        try:
+            response = self.client.chat(
+                model=getattr(self.config, "model", "command-r-plus"),
+                message=user_prompt,
+                preamble=system_prompt,
+                temperature=0.1,
+                max_tokens=700,
+            )
+            text = response.text.strip()
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.endswith("```"):
+                text = text[:-3]
+            data = json.loads(text)
+            waypoints = self._validate_trajectory(data)
+            return waypoints
+        except Exception as e:
+            logger.warning(f"Cohere servo trajectory failed, using fallback: {e}")
+            return self._fallback_trajectory(phase, left_target, right_target)
     
