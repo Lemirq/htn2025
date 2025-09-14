@@ -173,7 +173,7 @@ class WebScraper:
                 search_depth="basic",  # Can be "basic" or "advanced"
                 max_results=max_results,
                 include_domains=None,  # Can specify trusted domains if needed
-                exclude_domains=None,
+                exclude_domains=["twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "vimeo.com"],
                 include_answer=False,  # We don't need the AI-generated answer
                 include_raw_content=False,  # We'll fetch content ourselves
                 include_images=False
