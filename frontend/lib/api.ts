@@ -59,10 +59,25 @@ export interface SkillBundle {
   };
 }
 
+export interface FinalMovementsCommand {
+  id: string;
+  deg: number;
+}
+
+export interface FinalMovementsStep {
+  commands: FinalMovementsCommand[];
+}
+
+export interface FinalMovementsPayload {
+  sequence: FinalMovementsStep[];
+}
+
 class SkillLearningAPI {
   private socket: Socket | null = null;
   private baseUrl = "http://localhost:5555";
-  private finalMovementsListeners: Array<(payload: unknown) => void> = [];
+  private finalMovementsListeners: Array<
+    (payload: FinalMovementsPayload) => void
+  > = [];
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -87,7 +102,7 @@ class SkillLearningAPI {
       });
 
       // Forward final_movements events to subscribers
-      this.socket.on("final_movements", (payload: unknown) => {
+      this.socket.on("final_movements", (payload: FinalMovementsPayload) => {
         console.log("🦾 final_movements received:", payload);
         this.finalMovementsListeners.forEach((cb) => {
           try {
@@ -190,7 +205,9 @@ class SkillLearningAPI {
     return response.json();
   }
 
-  onFinalMovements(callback: (payload: unknown) => void): () => void {
+  onFinalMovements(
+    callback: (payload: FinalMovementsPayload) => void
+  ): () => void {
     this.finalMovementsListeners.push(callback);
     return () => {
       this.finalMovementsListeners = this.finalMovementsListeners.filter(

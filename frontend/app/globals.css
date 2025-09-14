@@ -37,6 +37,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-glass: var(--glass-background);
+  --color-glass-border: var(--glass-border);
+  --color-neon: var(--neon-glow);
+  --color-neon-secondary: var(--neon-secondary);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -86,7 +90,7 @@
 
     /* Custom futuristic tokens */
     --glass-background: 220 25% 8% / 0.6;
-    --glass-border: 200 30% 40% / 0.3;
+    --glass-border: rgb(200, 0, 0);
     --neon-glow: 195 100% 55%;
     --neon-secondary: 180 100% 70%;
 
@@ -310,7 +314,7 @@
 
     /* Custom futuristic tokens */
     --glass-background: 220 25% 8% / 0.6;
-    --glass-border: 200 30% 40% / 0.3;
+    --glass-border: rgba(255, 255, 255, 0.3);
     --neon-glow: 195 100% 55%;
     --neon-secondary: 180 100% 70%;
 
@@ -412,6 +416,33 @@
 @layer base {
   * {
     @apply border-border;
+  }
+  .bg-gradient-glass {
+    background: var(--gradient-glass);
+  }
+  .bg-gradient-mesh {
+    background: var(--gradient-mesh);
+  }
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-mesh {
+    background: var(--gradient-mesh);
+  }
+  .glass {
+    backdrop-filter: var(--backdrop-blur);
+  }
+  .backdrop-blur-glass {
+    backdrop-filter: var(--backdrop-blur);
+  }
+  .shadow-glass {
+    box-shadow: var(--shadow-glass);
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
   }
 
   body {

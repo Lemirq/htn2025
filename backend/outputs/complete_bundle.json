@@ -1,9 +1,9 @@
 {
-  "query": "do the one inch punch",
+  "query": "do an uppercut",
   "sources": [],
   "guide": {
-    "query": "do the one inch punch",
-    "title": "Learning Guide: Do The One Inch Punch",
+    "query": "do an uppercut",
+    "title": "Learning Guide: Do An Uppercut",
     "domain": "general",
     "prerequisites": [
       "Clear practice area",
@@ -65,7 +65,7 @@
     "difficulty_rating": 3
   },
   "plan": {
-    "skill": "Learning Guide: Do The One Inch Punch",
+    "skill": "Learning Guide: Do An Uppercut",
     "phases": [
       {
         "name": "preparation",

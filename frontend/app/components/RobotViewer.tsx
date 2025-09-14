@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { Mesh, Group } from "three";
-import { skillAPI } from "@/lib/api";
+import { Group } from "three";
+import { skillAPI, FinalMovementsCommand, FinalMovementsStep } from "@/lib/api";
 
 // Robot component with torso and two arms
 function Robot() {
@@ -36,7 +36,7 @@ function Robot() {
   useEffect(() => {
     const unsubscribe = skillAPI.onFinalMovements((payload) => {
       try {
-        const sequence: Array<any> = Array.isArray(payload?.sequence)
+        const sequence: FinalMovementsStep[] = Array.isArray(payload?.sequence)
           ? payload.sequence
           : [];
         let stepIndex = 0;
@@ -45,7 +45,7 @@ function Robot() {
         const applyNext = () => {
           if (stepIndex >= sequence.length) return;
           const step = sequence[stepIndex];
-          const cmds: Array<any> = Array.isArray(step?.commands)
+          const cmds: FinalMovementsCommand[] = Array.isArray(step?.commands)
             ? step.commands
             : [];
           cmds.forEach((cmd) => {
