@@ -25,7 +25,7 @@ class ScrapingConfig:
         r"youtube\.com|youtu\.be": 0.05,
         r"reddit\.com": 0.05
     })
-    min_content_length: int = 500
+    min_content_length: int = 200
     max_content_length: int = 15000
 
 
@@ -71,6 +71,7 @@ class SystemConfig:
     log_level: str = "INFO"
     enable_caching: bool = True
     cache_ttl_hours: int = 24
+    robot_base_url: Optional[str] = None  # e.g., "http://192.168.1.50"
     
     @classmethod
     def from_env(cls) -> SystemConfig:
@@ -83,6 +84,7 @@ class SystemConfig:
         config.output_dir = os.getenv("OUTPUT_DIR", "outputs")
         config.log_level = os.getenv("LOG_LEVEL", "INFO")
         config.enable_caching = os.getenv("ENABLE_CACHING", "true").lower() == "true"
+        config.robot_base_url = os.getenv("ROBOT_BASE_URL")
         
         return config
     
