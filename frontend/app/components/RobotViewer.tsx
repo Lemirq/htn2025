@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { Group } from "three";
 import { skillAPI, FinalMovementsCommand, FinalMovementsStep } from "@/lib/api";
+import { Button } from "@/components/ui/button";
 
 // Robot component with torso and two arms
 function Robot() {
@@ -219,6 +220,23 @@ function Robot() {
 }
 
 export const RobotViewer = () => {
+  const [isCalibrating, setIsCalibrating] = useState(false);
+  const [calibrateMsg, setCalibrateMsg] = useState<string | null>(null);
+
+  const handleCalibrate = async () => {
+    setIsCalibrating(true);
+    setCalibrateMsg(null);
+    try {
+      const res = await skillAPI.calibrateRobot();
+      setCalibrateMsg(res.message || "Calibration triggered");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Calibration failed";
+      setCalibrateMsg(`❌ ${msg}`);
+    } finally {
+      setIsCalibrating(false);
+    }
+  };
+
   return (
     <div className="h-full w-full relative overflow-hidden rounded-lg bg-gradient-mesh">
       <div className="absolute inset-0 bg-gradient-glass backdrop-blur-glass border border-glass-border rounded-lg" />
@@ -253,6 +271,23 @@ export const RobotViewer = () => {
           <div className="text-neon text-sm font-medium">Robot Status</div>
           <div className="text-foreground/80 text-xs">Online • Ready</div>
         </div>
+      </div>
+
+      {/* Reset/Calibrate Button */}
+      <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-2">
+        <Button
+          onClick={handleCalibrate}
+          disabled={isCalibrating}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+          size="sm"
+        >
+          {isCalibrating ? "Resetting..." : "Reset Robot"}
+        </Button>
+        {calibrateMsg && (
+          <div className="text-xs bg-gradient-glass backdrop-blur-glass border border-glass-border rounded-md px-2 py-1 text-foreground/80 max-w-[240px]">
+            {calibrateMsg}
+          </div>
+        )}
       </div>
 
       <div className="absolute bottom-4 left-4 z-20">

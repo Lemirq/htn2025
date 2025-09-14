@@ -33,7 +33,7 @@ class ScrapingConfig:
 class LLMConfig:
     """Configuration for LLM processing."""
     api_key: Optional[str] = None
-    model: str = "command-r-plus"
+    model: str = "command-a"
     temperature: float = 0.2
     max_tokens: int = 4000
     timeout_seconds: int = 30

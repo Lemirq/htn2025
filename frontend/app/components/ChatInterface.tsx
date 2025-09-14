@@ -192,6 +192,7 @@ export const ChatInterface = () => {
       ]);
 
       await skillAPI.processSkill(query, (update: SkillProcessingUpdate) => {
+        console.log("📈 Progress update received:", update);
         setProgressState({
           step: update.step,
           progress: update.progress,

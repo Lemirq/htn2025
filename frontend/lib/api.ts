@@ -115,6 +115,30 @@ class SkillLearningAPI {
     });
   }
 
+  async calibrateRobot(): Promise<{ ok: boolean; message: string }> {
+    const url = `${this.baseUrl}/calibrate`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(text || `HTTP ${response.status}`);
+      }
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const data = (await response.json()) as { message?: string };
+        return { ok: true, message: data?.message || "Calibration triggered" };
+      }
+      const text = await response.text().catch(() => "");
+      return { ok: true, message: text || "Calibration triggered" };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Calibrate request failed: ${msg}`);
+    }
+  }
+
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();

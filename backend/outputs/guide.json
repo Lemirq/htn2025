@@ -1,15 +1,22 @@
 {
-  "query": "Learn how to punch properly",
-  "title": "Learning Guide: Learn How To Punch Properly",
+  "query": "Downward hammer / overhand  Motion: Shoulder UD high → sweep down (negative UD), Elbow semi-extended to stiffen arm.  Use: strike downward onto head/shoulder; useful if you can raise shoulder above target.",
+  "title": "Learning Guide: Downward Hammer / Overhand  Motion: Shoulder Ud High → Sweep Down (Negative Ud), Elbow Semi-Extended To Stiffen Arm.  Use: Strike Downward Onto Head/Shoulder; Useful If You Can Raise Shoulder Above Target.",
   "domain": "general",
-  "prerequisites": ["Clear practice area", "Proper stance", "Basic warm-up"],
+  "prerequisites": [
+    "Clear practice area",
+    "Proper stance",
+    "Basic warm-up"
+  ],
   "safety": [
     "Start slowly",
     "Respect joint limits",
     "Use protective gear",
     "Practice with supervision"
   ],
-  "equipment": ["Training mat", "Protective gear (optional)"],
+  "equipment": [
+    "Training mat",
+    "Protective gear (optional)"
+  ],
   "core_principles": [
     "Whole-body coordination",
     "Proper form over speed",

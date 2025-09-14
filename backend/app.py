@@ -211,6 +211,63 @@ def health_check():
         'active_sessions': len(active_sessions)
     })
 
+@app.route('/calibrate', methods=['POST'])
+def calibrate_robot():
+    """Trigger robot calibration (reset) via robot controller.
+
+    Forwards a POST to ROBOT_BASE_URL/calibrate when configured.
+    If ROBOT_BASE_URL is not set, returns a simulated success response.
+    """
+    try:
+        # Ensure pipeline/config is available
+        if pipeline is None:
+            initialize_pipeline()
+
+        robot_base_url = getattr(pipeline.config, 'robot_base_url', None)
+        if not robot_base_url:
+            logger.info("ROBOT_BASE_URL not set; simulating calibration success")
+            return jsonify({
+                'ok': True,
+                'message': 'Calibration simulated (ROBOT_BASE_URL not set)'
+            })
+
+        base = robot_base_url.rstrip('/')
+        if not (base.startswith('http://') or base.startswith('https://')):
+            base = f"http://{base}"
+        url = f"{base}/calibrate"
+
+        logger.info(f"Forwarding calibration request to robot: {url}")
+        with httpx.Client(timeout=5.0) as client:
+            resp = client.post(url, json={'action': 'calibrate'})
+            content_type = resp.headers.get('content-type', '')
+            body: Any
+            try:
+                if 'application/json' in content_type:
+                    body = resp.json()
+                else:
+                    body = {'message': resp.text}
+            except Exception:
+                body = {'message': resp.text}
+
+            if resp.status_code >= 400:
+                logger.warning(f"Robot calibration returned {resp.status_code}: {resp.text}")
+                return jsonify({
+                    'ok': False,
+                    'message': 'Robot calibration failed',
+                    'status': resp.status_code,
+                    'robot_response': body
+                }), 502
+
+            return jsonify({
+                'ok': True,
+                'message': body.get('message') if isinstance(body, dict) else 'Calibration triggered',
+                'robot_response': body
+            })
+
+    except Exception as e:
+        logger.error(f"Calibration endpoint error: {e}")
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
 @app.route('/api/skill/process', methods=['POST'])
 def process_skill():
     """Process a skill learning query."""
